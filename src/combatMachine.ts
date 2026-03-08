@@ -19,13 +19,16 @@ function randomDelay() {
 }
 
 function isCrit() {
-  return Math.random() < 1 / 20;
+  return Math.random() < 1 / 10;
 }
 
 export const combatMachine = setup({
   types: {
     context: {} as CombatContext,
     events: {} as { type: "PUNCH" },
+  },
+  guards: {
+    isCritHit: ({ context }) => context.lastHit?.crit === true,
   },
   actions: {
     recordHit: assign(({ context }) => {
@@ -40,6 +43,11 @@ export const combatMachine = setup({
   },
   delays: {
     PUNCH_DELAY: randomDelay,
+    HOLD_DELAY: ({ context }: { context: CombatContext }) =>
+      context.lastHit?.crit ? 800 : 400,
+    CRIT_HOLD_DELAY: () => 1600,
+    RETRACT_DELAY: ({ context }: { context: CombatContext }) =>
+      context.lastHit?.crit ? 400 : 200,
   },
 }).createMachine({
   id: "combat",
@@ -63,12 +71,20 @@ export const combatMachine = setup({
     },
     holding: {
       after: {
-        400: "retracting",
+        HOLD_DELAY: [
+          { target: "critHolding", guard: "isCritHit" },
+          { target: "retracting" },
+        ],
+      },
+    },
+    critHolding: {
+      after: {
+        CRIT_HOLD_DELAY: "retracting",
       },
     },
     retracting: {
       after: {
-        200: "ready",
+        RETRACT_DELAY: "ready",
       },
     },
   },

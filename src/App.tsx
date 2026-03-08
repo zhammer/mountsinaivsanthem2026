@@ -46,6 +46,7 @@ export default function App() {
 
   const isPunching = !state.matches("ready");
   const punchSide = lastHit?.side;
+  const isCrit = lastHit?.crit ?? false;
   const punchPhase = state.value as string;
 
   useEffect(() => {
@@ -74,15 +75,15 @@ export default function App() {
       <div className="robot-wrap blue" ref={blueRef}>
         <Robot
           color="blue"
-          punchPhase={isPunching && punchSide === "left" ? punchPhase : ""}
-          hitPhase={isPunching && punchSide === "right" ? `hit-${punchPhase}` : ""}
+          punchPhase={isPunching && punchSide === "left" ? (isCrit && punchPhase === "retracting" ? "crit-retracting" : punchPhase) : ""}
+          hitPhase={isPunching && punchSide === "right" ? `hit-${punchPhase}${isCrit ? " hit-crit" : ""}` : ""}
         />
       </div>
       <div className="robot-wrap red" ref={redRef}>
         <Robot
           color="red"
-          punchPhase={isPunching && punchSide === "right" ? punchPhase : ""}
-          hitPhase={isPunching && punchSide === "left" ? `hit-${punchPhase}` : ""}
+          punchPhase={isPunching && punchSide === "right" ? (isCrit && punchPhase === "retracting" ? "crit-retracting" : punchPhase) : ""}
+          hitPhase={isPunching && punchSide === "left" ? `hit-${punchPhase}${isCrit ? " hit-crit" : ""}` : ""}
         />
       </div>
       <div className="hud">
