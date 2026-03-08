@@ -15,11 +15,11 @@ interface CombatContext {
 }
 
 function randomDelay() {
-  return 5000 + Math.random() * 7000;
+  return 3000 + Math.random() * 9000;
 }
 
 function isCrit() {
-  return Math.random() < 1 / 10;
+  return Math.random() < 1 / 5;
 }
 
 export const combatMachine = setup({

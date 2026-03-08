@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMachine } from "@xstate/react";
 import { combatMachine } from "./combatMachine";
 import { startSway, setPaused } from "./sway";
+import { TESTIMONIALS } from "./testimonials";
 
 type RobotColor = "blue" | "red";
 
@@ -39,7 +40,7 @@ function Robot({ color, punchPhase, hitPhase }: { color: RobotColor; punchPhase:
 
 export default function App() {
   const [state, send] = useMachine(combatMachine);
-  const { turn, lastHit, log } = state.context;
+  const { lastHit } = state.context;
 
   const blueRef = useRef<HTMLDivElement>(null);
   const redRef = useRef<HTMLDivElement>(null);
@@ -49,15 +50,52 @@ export default function App() {
   const isCrit = lastHit?.crit ?? false;
   const punchPhase = state.value as string;
 
+  const [shownTestimonials, setShownTestimonials] = useState<string[]>([]);
+  const nextIndexRef = useRef(0);
+  const lastHitCountRef = useRef(0);
+  const holdingTriggeredRef = useRef(false);
+
   useEffect(() => {
     setPaused(isPunching);
   }, [isPunching]);
 
   useEffect(() => {
-    if (blueRef.current && redRef.current) {
-      startSway(blueRef.current, redRef.current);
+    if (redRef.current && blueRef.current) {
+      startSway(redRef.current, blueRef.current);
     }
   }, []);
+
+  useEffect(() => {
+    const hitCount = state.context.log.length;
+    if (hitCount > lastHitCountRef.current) {
+      lastHitCountRef.current = hitCount;
+      holdingTriggeredRef.current = false;
+    }
+  }, [state.context.log.length]);
+
+  useEffect(() => {
+    const isHolding = state.matches("holding");
+    if (isHolding && !holdingTriggeredRef.current) {
+      holdingTriggeredRef.current = true;
+      const hit = state.context.log[state.context.log.length - 1];
+
+      const addOne = () => {
+        const idx = nextIndexRef.current % TESTIMONIALS.length;
+        setShownTestimonials((prev) => [TESTIMONIALS[idx].message, ...prev]);
+        nextIndexRef.current++;
+      };
+
+      if (hit?.crit) {
+        const timers: ReturnType<typeof setTimeout>[] = [];
+        for (let i = 0; i < 5; i++) {
+          timers.push(setTimeout(addOne, i * 150));
+        }
+        return () => timers.forEach(clearTimeout);
+      } else {
+        addOne();
+      }
+    }
+  }, [punchPhase]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -71,31 +109,41 @@ export default function App() {
   }, [send, state]);
 
   return (
-    <div className="arena">
-      <div className={`robot-wrap blue${isPunching && punchSide === "left" ? " punching-wrap" : ""}`} ref={blueRef}>
+    <><div className="arena">
+      <div className="title-card">
+        <div className="fighter left">
+          <img className="fighter-logo" src="sprites/logo_mount_sinai.png" alt="Mt. Sinai logo" />
+          <span className="fighter-name">Mt. Sinai</span>
+        </div>
+        <div className="fighter right">
+          <img className="fighter-logo" src="sprites/logo_anthem.png" alt="Anthem logo" />
+          <span className="fighter-name">Anthem</span>
+        </div>
+      </div>
+      <div className={`robot-wrap red${isPunching && punchSide === "left" ? " punching-wrap" : ""}`} ref={redRef}>
         <Robot
-          color="blue"
+          color="red"
           punchPhase={isPunching && punchSide === "left" ? (isCrit && punchPhase === "retracting" ? "crit-retracting" : punchPhase) : ""}
           hitPhase={isPunching && punchSide === "right" ? `hit-${punchPhase}${isCrit ? " hit-crit" : ""}` : ""}
         />
       </div>
-      <div className={`robot-wrap red${isPunching && punchSide === "right" ? " punching-wrap" : ""}`} ref={redRef}>
+      <div className={`robot-wrap blue${isPunching && punchSide === "right" ? " punching-wrap" : ""}`} ref={blueRef}>
         <Robot
-          color="red"
+          color="blue"
           punchPhase={isPunching && punchSide === "right" ? (isCrit && punchPhase === "retracting" ? "crit-retracting" : punchPhase) : ""}
           hitPhase={isPunching && punchSide === "left" ? `hit-${punchPhase}${isCrit ? " hit-crit" : ""}` : ""}
         />
       </div>
-      <div className="hud">
-        <div>State: {state.value as string}</div>
-        <div>Next: {turn}</div>
-        {lastHit && (
-          <div>
-            Last: {lastHit.side} {lastHit.crit ? "CRIT!" : "hit"}
-          </div>
-        )}
-        <div>Total hits: {log.length} | Crits: {log.filter((h) => h.crit).length}</div>
-      </div>
     </div>
+    {shownTestimonials.length > 0 && (
+      <div className="testimonials">
+        {shownTestimonials.map((msg, i) => (
+          <div key={`${i}-${msg.slice(0, 20)}`} className="testimonial-card">
+            <p>{msg}</p>
+          </div>
+        ))}
+      </div>
+    )}
+    </>
   );
 }
