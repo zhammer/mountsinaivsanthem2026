@@ -185,6 +185,23 @@
     animation: pulse-orange 2s ease-in-out infinite;
     padding: 8px 20px;
   }
+  .what-is-this {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: #fff;
+    cursor: pointer;
+    pointer-events: auto;
+    text-decoration: underline;
+  }
+  .what-is-this:hover {
+    color: #fff;
+  }
   .title-card .fighter-name {
     font-family: Impact, 'Arial Black', Haettenschweiler, sans-serif;
     font-size: 38px;
@@ -220,6 +237,9 @@
       0 -4px 0 0 #000;
     cursor: pointer;
   }
+  .quote-mark {
+    color: #999;
+  }
   .testimonial-card p {
     font-family: 'Courier New', monospace;
     font-size: 12px;
@@ -230,7 +250,73 @@
     color: #000;
     font-weight: bold;
   }
-  /* Popover overlay */
+  /* Info overlay — dark themed */
+  .info-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .info-card {
+    position: relative;
+    background: #000;
+    color: #ccc;
+    padding: 32px 36px;
+    max-width: 620px;
+    width: 90%;
+    cursor: default;
+  }
+  .info-card p {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    text-align: left;
+    margin: 0 0 16px;
+    color: #ccc;
+  }
+  .info-card p:last-of-type {
+    margin-bottom: 0;
+  }
+  .info-card a {
+    color: #ffd700;
+  }
+  .info-card a:hover {
+    color: #ffe755;
+  }
+  .info-card a.link-red {
+    color: #e6007e;
+  }
+  .info-card a.link-red:hover {
+    color: #ff44a0;
+  }
+  .info-card a.link-blue {
+    color: #144be5;
+  }
+  .info-card a.link-blue:hover {
+    color: #4477ff;
+  }
+  .info-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    outline: none;
+    font-size: 20px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    cursor: pointer;
+    color: #888;
+    padding: 4px 8px;
+  }
+  .info-close:hover {
+    color: #fff;
+  }
+  /* Testimonial popover */
   .popover-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;

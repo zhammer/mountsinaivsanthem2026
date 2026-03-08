@@ -6,7 +6,15 @@ import { TESTIMONIALS } from "./testimonials";
 
 type RobotColor = "blue" | "red";
 
-function Sprite({ part, color, className = "" }: { part: string; color: RobotColor; className?: string }) {
+function Sprite({
+  part,
+  color,
+  className = "",
+}: {
+  part: string;
+  color: RobotColor;
+  className?: string;
+}) {
   return (
     <img
       className={`robot-part ${className}`}
@@ -16,7 +24,15 @@ function Sprite({ part, color, className = "" }: { part: string; color: RobotCol
   );
 }
 
-function Robot({ color, punchPhase, hitPhase }: { color: RobotColor; punchPhase: string; hitPhase: string }) {
+function Robot({
+  color,
+  punchPhase,
+  hitPhase,
+}: {
+  color: RobotColor;
+  punchPhase: string;
+  hitPhase: string;
+}) {
   return (
     <div className={`robot-parts ${punchPhase} ${hitPhase}`}>
       {/* Back parts (behind everything) */}
@@ -52,7 +68,8 @@ export default function App() {
 
   const [shownTestimonials, setShownTestimonials] = useState<string[]>([]);
   const [popoverText, setPopoverText] = useState<string | null>(null);
-  const nextIndexRef = useRef(0);
+  const [showInfo, setShowInfo] = useState(false);
+  const nextIndexRef = useRef(Math.floor(Math.random() * TESTIMONIALS.length));
   const lastHitCountRef = useRef(0);
   const holdingTriggeredRef = useRef(false);
 
@@ -110,52 +127,174 @@ export default function App() {
   }, [send, state]);
 
   return (
-    <><div className="arena">
-      <div className="day-counter">
-        Day {Math.floor((Date.now() - new Date("2026-01-01").getTime()) / 86400000)}
-      </div>
-      <div className="title-card">
-        <div className="fighter left">
-          <img className="fighter-logo" src="sprites/logo_mount_sinai.png" alt="Mt. Sinai logo" />
-          <span className="fighter-name">Mt. Sinai</span>
+    <>
+      <div className="arena">
+        <div className="day-counter">
+          Day{" "}
+          {Math.floor(
+            (Date.now() - new Date("2026-01-01").getTime()) / 86400000
+          )}
         </div>
-        <div className="fighter right">
-          <img className="fighter-logo" src="sprites/logo_anthem.png" alt="Anthem logo" />
-          <span className="fighter-name">Anthem</span>
+        <div className="what-is-this" onClick={() => setShowInfo(true)}>
+          What is this website?
         </div>
-      </div>
-      <div className={`robot-wrap red${isPunching && punchSide === "left" ? " punching-wrap" : ""}`} ref={redRef}>
-        <Robot
-          color="red"
-          punchPhase={isPunching && punchSide === "left" ? (isCrit && punchPhase === "retracting" ? "crit-retracting" : punchPhase) : ""}
-          hitPhase={isPunching && punchSide === "right" ? `hit-${punchPhase}${isCrit ? " hit-crit" : ""}` : ""}
-        />
-      </div>
-      <div className={`robot-wrap blue${isPunching && punchSide === "right" ? " punching-wrap" : ""}`} ref={blueRef}>
-        <Robot
-          color="blue"
-          punchPhase={isPunching && punchSide === "right" ? (isCrit && punchPhase === "retracting" ? "crit-retracting" : punchPhase) : ""}
-          hitPhase={isPunching && punchSide === "left" ? `hit-${punchPhase}${isCrit ? " hit-crit" : ""}` : ""}
-        />
-      </div>
-    </div>
-    {shownTestimonials.length > 0 && (
-      <div className="testimonials">
-        {shownTestimonials.map((msg, i) => (
-          <div key={`${i}-${msg.slice(0, 20)}`} className="testimonial-card" onClick={() => setPopoverText(msg)}>
-            <p>&ldquo;{msg}&rdquo;</p>
+        <div className="title-card">
+          <div className="fighter left">
+            <img
+              className="fighter-logo"
+              src="sprites/logo_mount_sinai.png"
+              alt="Mt. Sinai logo"
+            />
+            <span className="fighter-name">Mt. Sinai</span>
           </div>
-        ))}
-      </div>
-    )}
-    {popoverText && (
-      <div className="popover-overlay" onClick={() => setPopoverText(null)}>
-        <div className="popover-card" onClick={(e) => e.stopPropagation()}>
-          <button className="popover-close" onClick={() => setPopoverText(null)}>✕</button>
-          <p>&ldquo;{popoverText}&rdquo;</p>
+          <div className="fighter right">
+            <img
+              className="fighter-logo"
+              src="sprites/logo_anthem.png"
+              alt="Anthem logo"
+            />
+            <span className="fighter-name">Anthem</span>
+          </div>
+        </div>
+        <div
+          className={`robot-wrap red${
+            isPunching && punchSide === "left" ? " punching-wrap" : ""
+          }`}
+          ref={redRef}
+        >
+          <Robot
+            color="red"
+            punchPhase={
+              isPunching && punchSide === "left"
+                ? isCrit && punchPhase === "retracting"
+                  ? "crit-retracting"
+                  : punchPhase
+                : ""
+            }
+            hitPhase={
+              isPunching && punchSide === "right"
+                ? `hit-${punchPhase}${isCrit ? " hit-crit" : ""}`
+                : ""
+            }
+          />
+        </div>
+        <div
+          className={`robot-wrap blue${
+            isPunching && punchSide === "right" ? " punching-wrap" : ""
+          }`}
+          ref={blueRef}
+        >
+          <Robot
+            color="blue"
+            punchPhase={
+              isPunching && punchSide === "right"
+                ? isCrit && punchPhase === "retracting"
+                  ? "crit-retracting"
+                  : punchPhase
+                : ""
+            }
+            hitPhase={
+              isPunching && punchSide === "left"
+                ? `hit-${punchPhase}${isCrit ? " hit-crit" : ""}`
+                : ""
+            }
+          />
         </div>
       </div>
-    )}
+      {shownTestimonials.length > 0 && (
+        <div className="testimonials">
+          {shownTestimonials.map((msg, i) => (
+            <div
+              key={`${i}-${msg.slice(0, 20)}`}
+              className="testimonial-card"
+              onClick={() => setPopoverText(msg)}
+            >
+              <p>
+                <span className="quote-mark">&ldquo;</span>
+                {msg}
+                <span className="quote-mark">&rdquo;</span>
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+      {showInfo && (
+        <div className="info-overlay" onClick={() => setShowInfo(false)}>
+          <div className="info-card" onClick={(e) => e.stopPropagation()}>
+            <button className="info-close" onClick={() => setShowInfo(false)}>
+              ✕
+            </button>
+            <p>
+              Mount Sinai and Anthem Blue Cross Blue Shield have been in failing
+              contract negotiations with each other since January 1st, 2026. It
+              appears they may not come to an agreement. The two multi-billion
+              dollar corporations{" "}
+              <a
+                className="link-red"
+                href="https://keepmountsinai.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                trade
+              </a>{" "}
+              <a
+                className="link-blue"
+                href="https://www.anthem.com/update/mountsinai"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                jabs
+              </a>
+              , accusing each other of unfairness on their public communications
+              pages. Meanwhile, hundreds of thousands of New Yorkers are left in
+              the lurch, scrambling to find new surgeons, primary care
+              physicians, and specialists needed for ongoing treatment.
+            </p>
+            <p>
+              Across social media posts and comment sections, New Yorkers share
+              their stories. But there has been little journalistic attention to
+              the situation, and Mayor Mamdani, who{" "}
+              <a
+                href="https://x.com/NYCMayor/status/2010532423994364346"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                only recently stated
+              </a>{" "}
+              that "No New Yorker should have to fear losing access to health
+              care" (while admirably standing beside the New York State Nurses
+              Association), has done nothing publicly to bring attention to this
+              issue or to pressure the parties to settle.
+            </p>
+            <p>
+              This website seeks to bring attention to this ongoing struggle,
+              assembling a collective voice from the scattered public
+              testimonials, inquiries, and pleas shared across the web. As one
+              person writes: "where is the public pressure to force these guys
+              to sign this contract?!? Where are the politicians that are
+              supposed to be standing up for us? [...]
+            </p>
+            <p>I feel like I’m screaming into the void."</p>
+          </div>
+        </div>
+      )}
+      {popoverText && (
+        <div className="popover-overlay" onClick={() => setPopoverText(null)}>
+          <div className="popover-card" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="popover-close"
+              onClick={() => setPopoverText(null)}
+            >
+              ✕
+            </button>
+            <p>
+              <span className="quote-mark">&ldquo;</span>
+              {popoverText}
+              <span className="quote-mark">&rdquo;</span>
+            </p>
+          </div>
+        </div>
+      )}
     </>
   );
 }
