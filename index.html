@@ -32,6 +32,9 @@
     height: 95vh;
     aspect-ratio: 1;
   }
+  .red .robot-parts {
+    transform: scaleX(-1);
+  }
   .robot-part {
     position: absolute;
     top: 0;
@@ -44,7 +47,47 @@
     transform: translate(10px, -6px);
   }
   .red .back-part {
-    transform: translate(-10px, -6px);
+    transform: translate(10px, -6px);
+  }
+  /* Punch pivot joints */
+  .shoulder-pivot, .elbow-pivot {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  .shoulder-pivot {
+    transform-origin: 52.1% 23.2%;
+    transform: rotate(0deg);
+    transition: transform 0.2s ease-in;
+  }
+  .elbow-pivot {
+    transform-origin: 53.9% 39.4%;
+    transform: rotate(0deg);
+    transition: transform 0.2s ease-in;
+  }
+  .punching .shoulder-pivot {
+    transform: rotate(90deg);
+    transition: transform 0.21s ease-out;
+  }
+  .punching .elbow-pivot {
+    transform: rotate(-63deg);
+    transition: transform 0.21s ease-out;
+  }
+  .holding .shoulder-pivot {
+    transform: rotate(90deg);
+    transition: none;
+  }
+  .holding .elbow-pivot {
+    transform: rotate(-63deg);
+    transition: none;
+  }
+  .retracting .shoulder-pivot {
+    transform: rotate(0deg);
+    transition: transform 0.2s ease-in;
+  }
+  .retracting .elbow-pivot {
+    transform: rotate(0deg);
+    transition: transform 0.2s ease-in;
   }
   .hud {
     position: absolute;

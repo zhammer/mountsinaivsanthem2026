@@ -40,7 +40,17 @@ export const combatMachine = setup({
     punching: {
       entry: "recordHit",
       after: {
-        500: "ready",
+        210: "holding",
+      },
+    },
+    holding: {
+      after: {
+        400: "retracting",
+      },
+    },
+    retracting: {
+      after: {
+        200: "ready",
       },
     },
   },

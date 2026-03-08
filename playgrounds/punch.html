@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Punch Playground</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    color: #fff;
+    font-family: monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .preview {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .robot-container {
+    position: relative;
+    height: 80vh;
+    aspect-ratio: 1;
+  }
+  .robot-container img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+  }
+  .back-part { transform: translate(10px, -6px); }
+  .shoulder-pivot, .elbow-pivot {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  /* Highlight mode: glow on arm pieces */
+  .robot-container.highlight .upper-arm-img {
+    filter: drop-shadow(0 0 6px #ff0) drop-shadow(0 0 12px #ff0);
+  }
+  .robot-container.highlight .forearm-img {
+    filter: drop-shadow(0 0 6px #0ff) drop-shadow(0 0 12px #0ff);
+  }
+  .joint-handle {
+    position: absolute;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    cursor: grab;
+    z-index: 100;
+    transform: translate(-50%, -50%);
+  }
+  .joint-handle:active { cursor: grabbing; }
+  .joint-handle.shoulder { background: #ff0; }
+  .joint-handle.elbow { background: #0ff; }
+  .joint-label {
+    position: absolute;
+    font-size: 11px;
+    white-space: nowrap;
+    pointer-events: none;
+    transform: translate(14px, -6px);
+    z-index: 100;
+  }
+  .controls {
+    background: #111;
+    padding: 12px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 6px 24px;
+    border-top: 1px solid #333;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  .control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .control label {
+    min-width: 160px;
+    font-size: 12px;
+  }
+  .control input[type="range"] { flex: 1; }
+  .control .val {
+    min-width: 60px;
+    text-align: right;
+    font-size: 12px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #888;
+    margin-top: 4px;
+    grid-column: 1 / -1;
+    border-bottom: 1px solid #333;
+    padding-bottom: 2px;
+  }
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    grid-column: 1 / -1;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  button {
+    background: #333;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 6px 14px;
+    font-family: monospace;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  button:hover { background: #444; }
+  button.active { background: #555; border-color: #0f0; color: #0f0; }
+  .output {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    padding: 8px;
+    font-size: 11px;
+    grid-column: 1 / -1;
+    white-space: pre;
+    line-height: 1.4;
+    max-height: 80px;
+    overflow: auto;
+  }
+  .legend {
+    font-size: 11px;
+    color: #888;
+    grid-column: 1 / -1;
+  }
+  .legend span.y { color: #ff0; }
+  .legend span.c { color: #0ff; }
+</style>
+</head>
+<body>
+
+<div class="preview">
+  <div class="robot-container highlight" id="robot">
+    <!-- Back parts -->
+    <img class="back-part" src="../sprites/robot_upper_arm_back_blue.png">
+    <img class="back-part" src="../sprites/robot_forearm_back_blue.png">
+    <img class="back-part" src="../sprites/robot_leg_back_blue.png">
+    <!-- Body parts -->
+    <img src="../sprites/robot_head_blue.png">
+    <img src="../sprites/robot_torso_blue.png">
+    <img src="../sprites/robot_leg_front_blue.png">
+    <!-- Front arm: shoulder-pivot wraps everything, elbow-pivot wraps only forearm -->
+    <div class="shoulder-pivot" id="shoulderPivot">
+      <img class="forearm-img" src="../sprites/robot_forearm_front_blue.png">
+      <div class="elbow-pivot" id="elbowPivot">
+        <img class="upper-arm-img" src="../sprites/robot_upper_arm_front_blue.png">
+      </div>
+      <!-- Elbow handle inside shoulder-pivot so it tracks -->
+      <div class="joint-handle elbow" id="elbowHandle"></div>
+      <span class="joint-label" id="elbowLabel" style="color: #0ff">Elbow</span>
+    </div>
+    <!-- Shoulder handle outside (fixed) -->
+    <div class="joint-handle shoulder" id="shoulderHandle"></div>
+    <span class="joint-label" id="shoulderLabel" style="color: #ff0">Shoulder</span>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="legend">
+    <span class="y">Yellow glow = upper arm (shoulder→elbow)</span> &nbsp;|&nbsp;
+    <span class="c">Cyan glow = forearm/fist (elbow→hand)</span>
+  </div>
+  <div class="btn-row">
+    <button id="btnRest">Rest</button>
+    <button id="btnPunch" class="active">Punch</button>
+    <button id="btnAnimate">Animate</button>
+    <button id="btnHighlight" class="active">Highlight</button>
+    <button id="btnCopy">Copy Config</button>
+  </div>
+
+  <div class="section-title">Joint Positions (drag dots or use sliders)</div>
+  <div class="control">
+    <label>Shoulder X:</label>
+    <input type="range" id="shoulderX" min="0" max="100" step="0.1" value="52.1">
+    <span class="val" id="shoulderX_val"></span>
+  </div>
+  <div class="control">
+    <label>Shoulder Y:</label>
+    <input type="range" id="shoulderY" min="0" max="100" step="0.1" value="23.2">
+    <span class="val" id="shoulderY_val"></span>
+  </div>
+  <div class="control">
+    <label>Elbow X:</label>
+    <input type="range" id="elbowX" min="0" max="100" step="0.1" value="53.9">
+    <span class="val" id="elbowX_val"></span>
+  </div>
+  <div class="control">
+    <label>Elbow Y:</label>
+    <input type="range" id="elbowY" min="0" max="100" step="0.1" value="39.4">
+    <span class="val" id="elbowY_val"></span>
+  </div>
+
+  <div class="section-title">Rotation (LIVE — sliders directly rotate)</div>
+  <div class="control">
+    <label>Shoulder angle:</label>
+    <input type="range" id="shoulderAngle" min="-180" max="180" step="1" value="90">
+    <span class="val" id="shoulderAngle_val"></span>
+  </div>
+  <div class="control">
+    <label>Elbow angle:</label>
+    <input type="range" id="elbowAngle" min="-180" max="180" step="1" value="-63">
+    <span class="val" id="elbowAngle_val"></span>
+  </div>
+
+  <div class="section-title">Timing (ms)</div>
+  <div class="control">
+    <label>Jab duration:</label>
+    <input type="range" id="jabTime" min="50" max="500" step="10" value="210">
+    <span class="val" id="jabTime_val"></span>
+  </div>
+  <div class="control">
+    <label>Hold duration:</label>
+    <input type="range" id="holdTime" min="100" max="1000" step="50" value="400">
+    <span class="val" id="holdTime_val"></span>
+  </div>
+  <div class="control">
+    <label>Retract duration:</label>
+    <input type="range" id="retractTime" min="50" max="500" step="10" value="200">
+    <span class="val" id="retractTime_val"></span>
+  </div>
+
+  <div class="output" id="output"></div>
+</div>
+
+<script>
+const robot = document.getElementById('robot');
+const shoulderPivot = document.getElementById('shoulderPivot');
+const elbowPivot = document.getElementById('elbowPivot');
+const shoulderHandle = document.getElementById('shoulderHandle');
+const elbowHandle = document.getElementById('elbowHandle');
+const shoulderLabel = document.getElementById('shoulderLabel');
+const elbowLabel = document.getElementById('elbowLabel');
+const output = document.getElementById('output');
+
+const sliders = {};
+for (const id of ['shoulderX','shoulderY','elbowX','elbowY','shoulderAngle','elbowAngle','jabTime','holdTime','retractTime']) {
+  sliders[id] = document.getElementById(id);
+}
+
+function getConfig() {
+  const c = {};
+  for (const [k, el] of Object.entries(sliders)) c[k] = parseFloat(el.value);
+  return c;
+}
+
+function updateDisplay() {
+  const c = getConfig();
+
+  // Update labels
+  for (const [key, slider] of Object.entries(sliders)) {
+    const valEl = document.getElementById(key + '_val');
+    if (valEl) valEl.textContent = slider.value + (key.includes('Angle') ? '°' : key.includes('Time') ? 'ms' : '%');
+  }
+
+  // Position handles
+  shoulderHandle.style.left = c.shoulderX + '%';
+  shoulderHandle.style.top = c.shoulderY + '%';
+  shoulderLabel.style.left = c.shoulderX + '%';
+  shoulderLabel.style.top = c.shoulderY + '%';
+  elbowHandle.style.left = c.elbowX + '%';
+  elbowHandle.style.top = c.elbowY + '%';
+  elbowLabel.style.left = c.elbowX + '%';
+  elbowLabel.style.top = c.elbowY + '%';
+
+  // Set pivot origins
+  shoulderPivot.style.transformOrigin = `${c.shoulderX}% ${c.shoulderY}%`;
+  elbowPivot.style.transformOrigin = `${c.elbowX}% ${c.elbowY}%`;
+
+  // ALWAYS apply angles directly from sliders
+  shoulderPivot.style.transform = `rotate(${c.shoulderAngle}deg)`;
+  elbowPivot.style.transform = `rotate(${c.elbowAngle}deg)`;
+
+  // Output
+  output.textContent =
+`/* Shoulder: ${c.shoulderX}% ${c.shoulderY}%  Elbow: ${c.elbowX}% ${c.elbowY}% */
+/* Punch angles — shoulder: ${c.shoulderAngle}°  elbow: ${c.elbowAngle}° */
+/* Timing — jab: ${c.jabTime}ms  hold: ${c.holdTime}ms  retract: ${c.retractTime}ms */`;
+}
+
+// Wire sliders
+for (const slider of Object.values(sliders)) {
+  slider.addEventListener('input', () => {
+    shoulderPivot.style.transition = 'none';
+    elbowPivot.style.transition = 'none';
+    updateDisplay();
+  });
+}
+
+// Rest/Punch toggle — saves punch angles so you can flip between rest and punch
+let punchAngles = { shoulder: parseFloat(sliders.shoulderAngle.value), elbow: parseFloat(sliders.elbowAngle.value) };
+let pose = 'punch'; // start in punch mode so sliders are live
+
+document.getElementById('btnRest').addEventListener('click', () => {
+  // Save current angles as punch pose before switching to rest
+  punchAngles.shoulder = parseFloat(sliders.shoulderAngle.value);
+  punchAngles.elbow = parseFloat(sliders.elbowAngle.value);
+  pose = 'rest';
+  sliders.shoulderAngle.value = 0;
+  sliders.elbowAngle.value = 0;
+  shoulderPivot.style.transition = 'none';
+  elbowPivot.style.transition = 'none';
+  document.getElementById('btnRest').classList.add('active');
+  document.getElementById('btnPunch').classList.remove('active');
+  updateDisplay();
+});
+
+document.getElementById('btnPunch').addEventListener('click', () => {
+  pose = 'punch';
+  sliders.shoulderAngle.value = punchAngles.shoulder;
+  sliders.elbowAngle.value = punchAngles.elbow;
+  shoulderPivot.style.transition = 'none';
+  elbowPivot.style.transition = 'none';
+  document.getElementById('btnPunch').classList.add('active');
+  document.getElementById('btnRest').classList.remove('active');
+  updateDisplay();
+});
+
+// Highlight toggle
+document.getElementById('btnHighlight').addEventListener('click', (e) => {
+  robot.classList.toggle('highlight');
+  e.target.classList.toggle('active');
+});
+
+// Animate
+let animating = false;
+document.getElementById('btnAnimate').addEventListener('click', () => {
+  if (animating) return;
+  animating = true;
+  const c = getConfig();
+  // Use saved punch angles for animation
+  const savedShoulder = pose === 'punch' ? c.shoulderAngle : punchAngles.shoulder;
+  const savedElbow = pose === 'punch' ? c.elbowAngle : punchAngles.elbow;
+
+  // Go to rest
+  sliders.shoulderAngle.value = 0;
+  sliders.elbowAngle.value = 0;
+  shoulderPivot.style.transition = 'none';
+  elbowPivot.style.transition = 'none';
+  updateDisplay();
+
+  // Jab out
+  requestAnimationFrame(() => {
+    shoulderPivot.style.transition = `transform ${c.jabTime}ms ease-out`;
+    elbowPivot.style.transition = `transform ${c.jabTime}ms ease-out`;
+    sliders.shoulderAngle.value = savedShoulder;
+    sliders.elbowAngle.value = savedElbow;
+    updateDisplay();
+
+    // Hold then retract
+    setTimeout(() => {
+      shoulderPivot.style.transition = `transform ${c.retractTime}ms ease-in`;
+      elbowPivot.style.transition = `transform ${c.retractTime}ms ease-in`;
+      sliders.shoulderAngle.value = 0;
+      sliders.elbowAngle.value = 0;
+      updateDisplay();
+
+      setTimeout(() => {
+        animating = false;
+      }, c.retractTime + 50);
+    }, c.jabTime + c.holdTime);
+  });
+});
+
+// Copy
+document.getElementById('btnCopy').addEventListener('click', () => {
+  navigator.clipboard.writeText(output.textContent);
+  document.getElementById('btnCopy').textContent = 'Copied!';
+  setTimeout(() => document.getElementById('btnCopy').textContent = 'Copy Config', 1000);
+});
+
+// Drag shoulder
+(function() {
+  let dragging = false;
+  shoulderHandle.addEventListener('mousedown', (e) => { dragging = true; e.preventDefault(); });
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const rect = robot.getBoundingClientRect();
+    sliders.shoulderX.value = Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100)).toFixed(1);
+    sliders.shoulderY.value = Math.max(0, Math.min(100, (e.clientY - rect.top) / rect.height * 100)).toFixed(1);
+    updateDisplay();
+  });
+  window.addEventListener('mouseup', () => { dragging = false; });
+})();
+
+// Drag elbow (un-rotate from shoulder space)
+(function() {
+  let dragging = false;
+  elbowHandle.addEventListener('mousedown', (e) => { dragging = true; e.preventDefault(); });
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const rect = robot.getBoundingClientRect();
+    const rawX = (e.clientX - rect.left) / rect.width * 100;
+    const rawY = (e.clientY - rect.top) / rect.height * 100;
+    const c = getConfig();
+    const rad = -c.shoulderAngle * Math.PI / 180;
+    const cos = Math.cos(rad), sin = Math.sin(rad);
+    const dx = rawX - c.shoulderX, dy = rawY - c.shoulderY;
+    sliders.elbowX.value = Math.max(0, Math.min(100, c.shoulderX + dx * cos - dy * sin)).toFixed(1);
+    sliders.elbowY.value = Math.max(0, Math.min(100, c.shoulderY + dx * sin + dy * cos)).toFixed(1);
+    updateDisplay();
+  });
+  window.addEventListener('mouseup', () => { dragging = false; });
+})();
+
+updateDisplay();
+</script>
+</body>
+</html>

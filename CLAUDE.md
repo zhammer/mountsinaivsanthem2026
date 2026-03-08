@@ -29,6 +29,71 @@ Colors (set on Principled BSDF Base Color):
 
 Materials are set to glossy plastic: Roughness 0.25, Specular IOR Level 0.8, Coat Weight 0.4, Coat Roughness 0.1.
 
+## Red Sprites (from Blue)
+
+Red sprites are generated from blue sprites via HSV hue-shift in Python — NOT rendered separately in Blender. This ensures identical geometry and joint positions. The web app flips the red robot with `scaleX(-1)` on `.red .robot-parts` so both robots share the same pivot points.
+
+To regenerate red sprites from blue:
+
+```python
+from PIL import Image
+import numpy as np
+
+def hue_shift_blue_to_red(input_path, output_path):
+    img = Image.open(input_path).convert('RGBA')
+    arr = np.array(img, dtype=np.float32)
+    mask = arr[:,:,3] > 10
+    r, g, b = arr[:,:,0][mask]/255, arr[:,:,1][mask]/255, arr[:,:,2][mask]/255
+
+    cmax = np.maximum(np.maximum(r, g), b)
+    cmin = np.minimum(np.minimum(r, g), b)
+    delta = cmax - cmin
+
+    h = np.zeros_like(r)
+    m_r = (cmax == r) & (delta > 0)
+    m_g = (cmax == g) & (delta > 0)
+    m_b = (cmax == b) & (delta > 0)
+    h[m_r] = (((g[m_r] - b[m_r]) / delta[m_r]) % 6) / 6
+    h[m_g] = (((b[m_g] - r[m_g]) / delta[m_g]) + 2) / 6
+    h[m_b] = (((r[m_b] - g[m_b]) / delta[m_b]) + 4) / 6
+
+    s = np.where(cmax > 0, delta / cmax, 0)
+    v = cmax
+    h = (h + 0.4) % 1.0        # shift blue→red
+    s = np.clip(s * 1.1, 0, 1)  # slight saturation boost
+
+    c2 = v * s
+    x = c2 * (1 - np.abs((h * 6) % 2 - 1))
+    m = v - c2
+    h6 = h * 6
+    nr = ng = nb = np.zeros_like(h)
+    for lo, hi, rc, gc, bc in [(0,1,c2,x,0),(1,2,x,c2,0),(2,3,0,c2,x),(3,4,0,x,c2),(4,5,x,0,c2),(5,6,c2,0,x)]:
+        idx = (h6 >= lo) & (h6 < hi)
+        nr = np.where(idx, rc, nr); ng = np.where(idx, gc, ng); nb = np.where(idx, bc, nb)
+    nr += m; ng += m; nb += m
+
+    result = arr.copy()
+    result[:,:,0][mask] = np.clip(nr*255, 0, 255)
+    result[:,:,1][mask] = np.clip(ng*255, 0, 255)
+    result[:,:,2][mask] = np.clip(nb*255, 0, 255)
+    Image.fromarray(result.astype(np.uint8)).save(output_path)
+
+for part in ['head','torso','upper_arm_front','forearm_front','upper_arm_back','forearm_back','leg_front','leg_back','full']:
+    hue_shift_blue_to_red(f'sprites/robot_{part}_blue.png', f'sprites/robot_{part}_red.png')
+```
+
+Key: only render blue from Blender. Red is always derived from blue. This keeps geometry identical so the same punch pivot points work for both robots.
+
+## Punch Animation
+
+Joint-based rotation using nested CSS pivot divs. Values tuned in `playgrounds/punch.html`:
+
+- **Shoulder pivot**: 52.1% 23.2% (transform-origin), punch angle: 90°
+- **Elbow pivot**: 53.9% 39.4% (transform-origin), punch angle: -63°
+- **Timing**: jab 210ms, hold 400ms, retract 200ms
+
+The shoulder-pivot wraps the forearm sprite + the elbow-pivot. The elbow-pivot wraps the upper-arm sprite (the extending piece). This means the shoulder swings the whole arm, and the elbow extends the flat arm piece forward.
+
 ## Previous Work
 
 The first git commit contains a full canvas-based fighting game with puppet animation (separate body part sprites, keyboard controls, health bars, punch/hit animations). That code can be restored from git history.
