@@ -30,7 +30,7 @@
   .robot-wrap.punching-wrap { z-index: 1; }
   .robot-parts {
     position: relative;
-    height: 95vh;
+    height: max(95vh, 700px);
     aspect-ratio: 1;
   }
   .blue .robot-parts {
@@ -408,19 +408,16 @@
   .popover-close:hover {
     color: #999;
   }
-  /* Short viewport: when width > 2x height */
-  @media (min-aspect-ratio: 2/1) {
+  /* Short viewport: anchor robots from top, scale down header */
+  @media (max-height: 750px) {
     .arena {
       align-items: flex-start;
     }
     .robot-wrap {
-      top: 25%;
+      margin-top: 40px;
     }
-    .robot-parts {
-      height: 120vh;
-    }
-    .robot-wrap.red { margin-right: -100px; }
-    .robot-wrap.blue { margin-left: -100px; }
+    .robot-wrap.red { margin-right: -152px; }
+    .robot-wrap.blue { margin-left: -152px; }
     .day-counter {
       font-size: 32px;
       padding: 4px 14px;
