@@ -3,7 +3,9 @@ import { useMachine } from "@xstate/react";
 import { combatMachine } from "./combatMachine";
 import { startSway, setPaused } from "./sway";
 
-function Sprite({ part, color, className = "" }) {
+type RobotColor = "blue" | "red";
+
+function Sprite({ part, color, className = "" }: { part: string; color: RobotColor; className?: string }) {
   return (
     <img
       className={`robot-part ${className}`}
@@ -13,7 +15,7 @@ function Sprite({ part, color, className = "" }) {
   );
 }
 
-function Robot({ color, punchPhase }) {
+function Robot({ color, punchPhase }: { color: RobotColor; punchPhase: string }) {
   return (
     <div className={`robot-parts ${punchPhase}`}>
       {/* Back parts (behind everything) */}
@@ -39,12 +41,12 @@ export default function App() {
   const [state, send] = useMachine(combatMachine);
   const { turn, lastHit, log } = state.context;
 
-  const blueRef = useRef(null);
-  const redRef = useRef(null);
+  const blueRef = useRef<HTMLDivElement>(null);
+  const redRef = useRef<HTMLDivElement>(null);
 
   const isPunching = !state.matches("ready");
   const punchSide = lastHit?.side;
-  const punchPhase = state.value;
+  const punchPhase = state.value as string;
 
   useEffect(() => {
     setPaused(isPunching);
@@ -57,7 +59,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    function onKeyDown(e) {
+    function onKeyDown(e: KeyboardEvent) {
       if (e.code === "Space" && state.matches("ready")) {
         e.preventDefault();
         send({ type: "PUNCH" });
@@ -82,7 +84,7 @@ export default function App() {
         />
       </div>
       <div className="hud">
-        <div>State: {state.value}</div>
+        <div>State: {state.value as string}</div>
         <div>Next: {turn}</div>
         {lastHit && (
           <div>
