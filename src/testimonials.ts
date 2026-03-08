@@ -109,12 +109,6 @@ export const TESTIMONIALS: Testimonial[] = [
   },
   {
     message:
-      "I have skin patch testing on Feb 24th. I waited 4 months to get the appointment. It would be very annoying if I need to cancel and reschedule.\n\nI'm sure this will cost a ton out of pocket.",
-    source:
-      "https://www.reddit.com/r/nyc/comments/1q0lhw1/mount_sinai_states_it_will_be_outofnetwork_with/",
-  },
-  {
-    message:
       "Yes, it’s a huge disruption of the complicated healthcare I receive for my chronic condition; I have no idea how any of this works (or indeed doesn’t work). I guess I should say that I’m grateful that I have health insurance, but it’s an administrative nightmare to have to look for five new specialists and other health care people for no good reason.",
     source:
       "https://www.reddit.com/r/nyc/comments/1q0lhw1/mount_sinai_states_it_will_be_outofnetwork_with/",
@@ -142,12 +136,6 @@ export const TESTIMONIALS: Testimonial[] = [
       "Over 9000 Mt Sinai Dr’s are already out of network effective January 1st. Thankfully my Dr approved my refill today. Praying they can still come to an agreement.",
     source:
       "https://www.reddit.com/r/nyc/comments/1q0lhw1/mount_sinai_states_it_will_be_outofnetwork_with/",
-  },
-  {
-    message:
-      "I hope this ends up ultimately being the case, however the deadline has passed and no agreement has been reached, the changes are going into effect immediately for primary care etc and I think March 1st for hospital care? Something like that.\n\nI have a follow up w/ my PCP next week that would have been $35 before, and is now showing up as like $250, so the out of network rates are definitely already in effect for primary care.",
-    source:
-      "https://www.reddit.com/r/NYCbitcheswithtaste/comments/1q1c7hd/nybwanthem/",
   },
   {
     message:
