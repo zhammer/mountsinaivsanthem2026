@@ -43,6 +43,8 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
   }
   .back-part {
     transform: translate(10px, -6px);
@@ -247,7 +249,7 @@
   .info-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.85);
     z-index: 100;
     display: flex;
     align-items: flex-start;
@@ -365,7 +367,7 @@
   .popover-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.85);
     z-index: 100;
     display: flex;
     align-items: flex-start;

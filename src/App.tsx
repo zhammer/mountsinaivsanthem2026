@@ -255,9 +255,9 @@ export default function App() {
                 jabs
               </a>
               , accusing each other of unfairness on their public communications
-              pages. Meanwhile, hundreds of thousands of New Yorkers are left in
-              the lurch, scrambling to find new surgeons, primary care
-              physicians, and specialists needed for ongoing treatment.
+              pages. But it is the patients who get hurt: hundreds of thousands
+              of New Yorkers must now scramble to find new surgeons, primary
+              care physicians, and specialists for ongoing treatment.
             </p>
             <p>
               Across social media posts and comment sections, New Yorkers share
