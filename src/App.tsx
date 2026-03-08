@@ -115,6 +115,9 @@ export default function App() {
           <img className="fighter-logo" src="sprites/logo_mount_sinai.png" alt="Mt. Sinai logo" />
           <span className="fighter-name">Mt. Sinai</span>
         </div>
+        <div className="day-counter">
+          Day {Math.floor((Date.now() - new Date("2026-01-01").getTime()) / 86400000)}
+        </div>
         <div className="fighter right">
           <img className="fighter-logo" src="sprites/logo_anthem.png" alt="Anthem logo" />
           <span className="fighter-name">Anthem</span>
