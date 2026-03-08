@@ -257,7 +257,7 @@ export default function App() {
               , accusing each other of unfairness on their public communications
               pages. But it is the patients who get hurt: hundreds of thousands
               of New Yorkers must now scramble to find new surgeons, primary
-              care physicians, and specialists for ongoing treatment.
+              care physicians, and specialists needed or ongoing treatment.
             </p>
             <p>
               Across social media posts and comment sections, New Yorkers share
