@@ -32,7 +32,7 @@ function Robot({ color, innerRef }) {
 }
 
 export default function App() {
-  const [state] = useMachine(combatMachine);
+  const [state, send] = useMachine(combatMachine);
   const { turn, lastHit, log } = state.context;
 
   const blueRef = useRef(null);
@@ -43,6 +43,17 @@ export default function App() {
       startSway(blueRef.current, redRef.current);
     }
   }, []);
+
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.code === "Space" && state.matches("ready")) {
+        e.preventDefault();
+        send({ type: "PUNCH" });
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [send, state]);
 
   return (
     <div className="arena">

@@ -32,7 +32,11 @@ export const combatMachine = setup({
     log: [],
   },
   states: {
-    ready: {},
+    ready: {
+      on: {
+        PUNCH: "punching",
+      },
+    },
     punching: {
       entry: "recordHit",
       after: {
