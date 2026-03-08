@@ -56,6 +56,8 @@ export function startSway(blueWrap: HTMLElement, redWrap: HTMLElement) {
       // Snap to closest-to-each-other position
       blueWrap.style.transform = `scaleX(-1) translate(${-SWAY_X}px, 0px)`;
       redWrap.style.transform = `scaleX(-1) translate(${SWAY_X}px, 0px)`;
+      // Reset start so sway resumes from t=0 (inward position)
+      start = null;
       requestAnimationFrame(tick);
       return;
     }
