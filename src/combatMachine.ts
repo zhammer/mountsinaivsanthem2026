@@ -48,7 +48,7 @@ export const combatMachine = setup({
   },
   delays: {
     PUNCH_DELAY: ({ context }: { context: CombatContext }) =>
-      context.manualPunch ? 20000 : randomDelay(),
+      context.manualPunch ? 10000 : randomDelay(),
     HOLD_DELAY: ({ context }: { context: CombatContext }) =>
       context.lastHit?.crit ? 800 : 1600,
     CRIT_HOLD_DELAY: () => 1600,
