@@ -440,6 +440,68 @@
       height: 36px;
     }
   }
+  /* Tablet and below */
+  @media (max-width: 900px) {
+    .title-card {
+      padding: 14px 24px 10px;
+    }
+    .title-card .fighter-name {
+      font-size: 26px;
+      letter-spacing: 2px;
+    }
+    .title-card .fighter-logo {
+      height: 32px;
+    }
+    .day-counter {
+      font-size: 36px;
+      padding: 6px 16px;
+    }
+    .what-is-this {
+      top: 84px;
+    }
+  }
+  /* Mobile */
+  @media (max-width: 600px) {
+    .title-card {
+      top: 0;
+      padding: 8px 16px;
+    }
+    .day-counter {
+      display: none;
+    }
+    .title-card .fighter-name {
+      font-size: 26px;
+      letter-spacing: 1px;
+    }
+    .title-card .fighter-logo {
+      height: 30px;
+    }
+    .title-card .fighter {
+      gap: 6px;
+    }
+    .what-is-this {
+      position: static;
+      transform: none;
+      font-size: 14px;
+      text-align: center;
+      padding: 0 0 16px;
+    }
+    .robot-parts {
+      height: 70vh;
+    }
+    .robot-wrap {
+      margin-top: 44px;
+    }
+    .robot-wrap.red { margin-right: -90px; }
+    .robot-wrap.blue { margin-left: -90px; }
+    .arena {
+      align-items: flex-start;
+      height: 75vh;
+    }
+    .testimonials {
+      margin-top: 0;
+    }
+  }
 </style>
 </head>
 <body>

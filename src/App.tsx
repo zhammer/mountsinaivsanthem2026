@@ -140,9 +140,6 @@ export default function App() {
             (Date.now() - new Date("2026-01-01").getTime()) / 86400000
           )}
         </div>
-        <div className="what-is-this" onClick={() => setShowInfo(true)}>
-          What is this website?
-        </div>
         <div className="title-card">
           <div className="fighter left">
             <img
@@ -209,6 +206,9 @@ export default function App() {
             }
           />
         </div>
+      </div>
+      <div className="what-is-this" onClick={() => setShowInfo(true)}>
+        What is this website?
       </div>
       {shownTestimonials.length > 0 && (
         <div className="testimonials">
