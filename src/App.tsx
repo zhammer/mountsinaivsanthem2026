@@ -51,6 +51,7 @@ export default function App() {
   const punchPhase = state.value as string;
 
   const [shownTestimonials, setShownTestimonials] = useState<string[]>([]);
+  const [popoverText, setPopoverText] = useState<string | null>(null);
   const nextIndexRef = useRef(0);
   const lastHitCountRef = useRef(0);
   const holdingTriggeredRef = useRef(false);
@@ -141,10 +142,18 @@ export default function App() {
     {shownTestimonials.length > 0 && (
       <div className="testimonials">
         {shownTestimonials.map((msg, i) => (
-          <div key={`${i}-${msg.slice(0, 20)}`} className="testimonial-card">
-            <p>{msg}</p>
+          <div key={`${i}-${msg.slice(0, 20)}`} className="testimonial-card" onClick={() => setPopoverText(msg)}>
+            <p>&ldquo;{msg}&rdquo;</p>
           </div>
         ))}
+      </div>
+    )}
+    {popoverText && (
+      <div className="popover-overlay" onClick={() => setPopoverText(null)}>
+        <div className="popover-card" onClick={(e) => e.stopPropagation()}>
+          <button className="popover-close" onClick={() => setPopoverText(null)}>✕</button>
+          <p>&ldquo;{popoverText}&rdquo;</p>
+        </div>
       </div>
     )}
     </>
