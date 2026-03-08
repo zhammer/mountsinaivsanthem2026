@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Robot Boxing</title>
+<title>Mount Sinai vs Anthem 2026</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body, #root {
@@ -298,6 +298,52 @@
   }
   .info-card a.link-blue:hover {
     color: #4477ff;
+  }
+  .info-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .info-action {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #ffd700;
+    cursor: pointer;
+    text-decoration: none;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .info-action:hover {
+    color: #ffe755;
+  }
+  .info-action-text {
+    text-decoration: underline;
+  }
+  .copied-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 200;
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 16px 32px;
+    pointer-events: none;
+  }
+  .info-credit {
+    margin-top: 24px !important;
+    font-size: 11px !important;
+    color: #666 !important;
+  }
+  .info-credit a {
+    color: #666;
+  }
+  .info-credit a:hover {
+    color: #999;
   }
   .info-close {
     position: absolute;

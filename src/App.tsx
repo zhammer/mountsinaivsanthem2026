@@ -69,6 +69,7 @@ export default function App() {
   const [shownTestimonials, setShownTestimonials] = useState<string[]>([]);
   const [popoverText, setPopoverText] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [copied, setCopied] = useState(false);
   const nextIndexRef = useRef(Math.floor(Math.random() * TESTIMONIALS.length));
   const lastHitCountRef = useRef(0);
   const holdingTriggeredRef = useRef(false);
@@ -275,8 +276,39 @@ export default function App() {
               supposed to be standing up for us? [...]
             </p>
             <p>I feel like I’m screaming into the void."</p>
+            <div className="info-actions">
+              <span
+                className="info-action"
+                onClick={() => {
+                  navigator.clipboard.writeText("https://mountsinaivsanthem2026.com");
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                [<span className="info-action-text">Share this website</span>]
+              </span>
+              <a
+                className="info-action"
+                href="mailto:zach.the.hammer@gmail.com?subject=My%20Mount%20Sinai%20%2F%20Anthem%20Negotiations%20Story"
+              >
+                [<span className="info-action-text">Share your story</span>]
+              </a>
+            </div>
+            <p className="info-credit">
+              Rock ‘Em Sock ‘Em Robots 3D model by{" "}
+              <a
+                href="https://sketchfab.com/3d-models/rock-em-sock-em-robots-85f17c83f71a4acb85867881cd67b649"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Sebastián Espinoza
+              </a>
+            </p>
           </div>
         </div>
+      )}
+      {copied && (
+        <div className="copied-overlay">Link copied!</div>
       )}
       {popoverText && (
         <div className="popover-overlay" onClick={() => setPopoverText(null)}>
