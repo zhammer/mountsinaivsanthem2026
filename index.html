@@ -24,6 +24,7 @@
     position: absolute;
     display: flex;
     align-items: center;
+    will-change: transform;
   }
   .robot-wrap.red { right: 50%; margin-right: -160px; z-index: 0; }
   .robot-wrap.blue { left: 50%; margin-left: -160px; z-index: 0; }
@@ -45,6 +46,7 @@
     object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
+    will-change: transform;
   }
   .back-part {
     transform: translate(10px, -6px);
