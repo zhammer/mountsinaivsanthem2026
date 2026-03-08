@@ -89,6 +89,21 @@
     transform: rotate(0deg);
     transition: transform 0.2s ease-in;
   }
+  /* Head hit reaction — starts at holding (after fist lands) */
+  .head {
+    transition: transform 0.15s ease-in;
+  }
+  .hit-punching .head {
+    transform: translateY(0);
+  }
+  .hit-holding .head {
+    transform: translateY(-3%);
+    transition: transform 0.1s ease-out 0.02s;
+  }
+  .hit-retracting .head {
+    transform: translateY(0);
+    transition: transform 0.2s ease-in;
+  }
   .hud {
     position: absolute;
     bottom: 20px;

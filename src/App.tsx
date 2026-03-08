@@ -15,15 +15,15 @@ function Sprite({ part, color, className = "" }: { part: string; color: RobotCol
   );
 }
 
-function Robot({ color, punchPhase }: { color: RobotColor; punchPhase: string }) {
+function Robot({ color, punchPhase, hitPhase }: { color: RobotColor; punchPhase: string; hitPhase: string }) {
   return (
-    <div className={`robot-parts ${punchPhase}`}>
+    <div className={`robot-parts ${punchPhase} ${hitPhase}`}>
       {/* Back parts (behind everything) */}
       <Sprite part="upper_arm_back" color={color} className="back-part" />
       <Sprite part="forearm_back" color={color} className="back-part" />
       <Sprite part="leg_back" color={color} className="back-part" />
       {/* Body */}
-      <Sprite part="head" color={color} />
+      <Sprite part="head" color={color} className="head" />
       <Sprite part="torso" color={color} />
       <Sprite part="leg_front" color={color} />
       {/* Front arm with pivot joints */}
@@ -75,12 +75,14 @@ export default function App() {
         <Robot
           color="blue"
           punchPhase={isPunching && punchSide === "left" ? punchPhase : ""}
+          hitPhase={isPunching && punchSide === "right" ? `hit-${punchPhase}` : ""}
         />
       </div>
       <div className="robot-wrap red" ref={redRef}>
         <Robot
           color="red"
           punchPhase={isPunching && punchSide === "right" ? punchPhase : ""}
+          hitPhase={isPunching && punchSide === "left" ? `hit-${punchPhase}` : ""}
         />
       </div>
       <div className="hud">

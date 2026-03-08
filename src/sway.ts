@@ -48,24 +48,19 @@ function swayPos(t: number): { x: number; y: number } {
 
 export function startSway(blueWrap: HTMLElement, redWrap: HTMLElement) {
   let start: number | null = null;
-  let lastElapsed = 0;
-  let frozenElapsed = 0;
 
   function tick(timestamp: number) {
     if (!start) start = timestamp;
 
     if (paused) {
-      if (frozenElapsed === 0) frozenElapsed = lastElapsed;
-    } else {
-      if (frozenElapsed > 0) {
-        // Resume: adjust start so elapsed continues from where we froze
-        start = timestamp - frozenElapsed * 1000;
-        frozenElapsed = 0;
-      }
-      lastElapsed = (timestamp - start) / 1000;
+      // Snap to closest-to-each-other position
+      blueWrap.style.transform = `scaleX(-1) translate(${-SWAY_X}px, 0px)`;
+      redWrap.style.transform = `scaleX(-1) translate(${SWAY_X}px, 0px)`;
+      requestAnimationFrame(tick);
+      return;
     }
 
-    const elapsed = paused ? frozenElapsed : lastElapsed;
+    const elapsed = (timestamp - start) / 1000;
 
     const tBlue = (elapsed % CYCLE) / CYCLE;
     const posBlue = swayPos(tBlue);
