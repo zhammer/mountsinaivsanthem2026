@@ -72,14 +72,14 @@ export default function App() {
 
   return (
     <div className="arena">
-      <div className="robot-wrap blue" ref={blueRef}>
+      <div className={`robot-wrap blue${isPunching && punchSide === "left" ? " punching-wrap" : ""}`} ref={blueRef}>
         <Robot
           color="blue"
           punchPhase={isPunching && punchSide === "left" ? (isCrit && punchPhase === "retracting" ? "crit-retracting" : punchPhase) : ""}
           hitPhase={isPunching && punchSide === "right" ? `hit-${punchPhase}${isCrit ? " hit-crit" : ""}` : ""}
         />
       </div>
-      <div className="robot-wrap red" ref={redRef}>
+      <div className={`robot-wrap red${isPunching && punchSide === "right" ? " punching-wrap" : ""}`} ref={redRef}>
         <Robot
           color="red"
           punchPhase={isPunching && punchSide === "right" ? (isCrit && punchPhase === "retracting" ? "crit-retracting" : punchPhase) : ""}
