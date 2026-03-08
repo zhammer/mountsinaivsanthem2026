@@ -12,6 +12,7 @@ interface CombatContext {
   turn: Side;
   lastHit: { side: Side; crit: boolean } | null;
   log: Hit[];
+  manualPunch: boolean;
 }
 
 function randomDelay() {
@@ -25,24 +26,29 @@ function isCrit() {
 export const combatMachine = setup({
   types: {
     context: {} as CombatContext,
-    events: {} as { type: "PUNCH" },
+    events: {} as { type: "PUNCH" } | { type: "PUNCH_LEFT" } | { type: "PUNCH_RIGHT" },
   },
   guards: {
     isCritHit: ({ context }) => context.lastHit?.crit === true,
   },
   actions: {
-    recordHit: assign(({ context }) => {
-      const side = context.turn;
+    recordHit: assign(({ context, event }) => {
+      const manual = event.type === "PUNCH" || event.type === "PUNCH_LEFT" || event.type === "PUNCH_RIGHT";
+      const side = event.type === "PUNCH_LEFT" ? "left" as Side
+        : event.type === "PUNCH_RIGHT" ? "right" as Side
+        : context.turn;
       const crit = isCrit();
       return {
         turn: (side === "left" ? "right" : "left") as Side,
         lastHit: { side, crit },
         log: [...context.log, { side, crit, time: Date.now() }],
+        manualPunch: manual,
       };
     }),
   },
   delays: {
-    PUNCH_DELAY: randomDelay,
+    PUNCH_DELAY: ({ context }: { context: CombatContext }) =>
+      context.manualPunch ? 20000 : randomDelay(),
     HOLD_DELAY: ({ context }: { context: CombatContext }) =>
       context.lastHit?.crit ? 800 : 1600,
     CRIT_HOLD_DELAY: () => 1600,
@@ -56,11 +62,14 @@ export const combatMachine = setup({
     turn: "left" as Side,
     lastHit: null,
     log: [],
+    manualPunch: false,
   },
   states: {
     ready: {
       on: {
         PUNCH: "punching",
+        PUNCH_LEFT: "punching",
+        PUNCH_RIGHT: "punching",
       },
       after: {
         PUNCH_DELAY: "punching",
