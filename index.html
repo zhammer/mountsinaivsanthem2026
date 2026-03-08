@@ -6,420 +6,59 @@
 <title>Robot Boxing</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #1a1a2e;
+  html, body, #root {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+  }
+  .arena {
+    width: 100%;
+    height: 100%;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
-    font-family: 'Courier New', monospace;
-    color: white;
+    position: relative;
   }
-  canvas { border: 2px solid #333; }
-  .hud {
+  .robot-wrap {
+    position: absolute;
     display: flex;
-    justify-content: space-between;
-    width: 800px;
-    margin-bottom: 10px;
+    align-items: center;
   }
-  .health-bar {
-    width: 300px;
-    height: 24px;
-    background: #333;
-    border: 2px solid #555;
+  .robot-wrap.blue { right: 50%; margin-right: 20px; }
+  .robot-wrap.red { left: 50%; margin-left: 20px; }
+  .robot-parts {
+    position: relative;
+    height: 95vh;
+    aspect-ratio: 1;
   }
-  .health-fill { height: 100%; transition: width 0.2s; }
-  .health-label { margin-bottom: 4px; font-size: 14px; font-weight: bold; }
-  .p1 .health-fill { background: #144be5; }
-  .p2 .health-fill { background: #d9006a; }
-  .p1 .health-label { color: #144be5; }
-  .p2 .health-label { color: #d9006a; }
-  .controls { margin-top: 12px; font-size: 13px; color: #666; }
+  .robot-part {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .back-part {
+    transform: translateX(3px);
+  }
+  .hud {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-family: monospace;
+    font-size: 14px;
+    text-align: center;
+    opacity: 0.7;
+  }
+  .hud div { margin: 4px 0; }
 </style>
 </head>
 <body>
-
-<div class="hud">
-  <div class="p1">
-    <div class="health-label">BLUE (A/D move, W jump, S punch)</div>
-    <div class="health-bar"><div class="health-fill" id="p1-health" style="width:100%"></div></div>
-  </div>
-  <div class="p2">
-    <div class="health-label" style="text-align:right">RED (Arrows move, Down punch)</div>
-    <div class="health-bar"><div class="health-fill" id="p2-health" style="width:100%"></div></div>
-  </div>
-</div>
-
-<canvas id="game" width="800" height="500"></canvas>
-
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-
-const SS = 2048; // sprite source size
-const S = 0.125; // scale factor (2048 * 0.125 = 256px on screen)
-
-// Sprite-space reference points (scaled from 512 to 2048: multiply by 4)
-const CX = 1148;  // robot center X in sprite
-const FY = 1844;  // robot feet Y in sprite (bottom)
-
-// Joint positions in sprite pixel coords (scaled 4x from 512 versions)
-const SHOULDER_FRONT = { x: 1208, y: 756 };
-const SHOULDER_BACK  = { x: 1084, y: 756 };
-const ELBOW_FRONT    = { x: 1044, y: 880 };
-const ELBOW_BACK     = { x: 1248, y: 880 };
-const NECK           = { x: 1148, y: 716 };
-const TORSO_CENTER   = { x: 1148, y: 820 };
-const HIP_FRONT      = { x: 1084, y: 1084 };
-const HIP_BACK       = { x: 1208, y: 1084 };
-// Part names to load
-const PART_NAMES = [
-  'head', 'torso',
-  'upper_arm_front', 'forearm_front',
-  'upper_arm_back', 'forearm_back',
-  'leg_front', 'leg_back'
-];
-
-const images = { blue: {}, red: {} };
-let loadCount = 0;
-const totalImages = PART_NAMES.length * 2;
-
-PART_NAMES.forEach(p => {
-  ['blue', 'red'].forEach(c => {
-    const img = new Image();
-    img.src = `sprites/robot_${p}_${c}.png`;
-    img.onload = () => {
-      console.log(`Loaded: ${p}_${c}`);
-      if (++loadCount === totalImages) init();
-    };
-    img.onerror = () => console.error(`FAILED: sprites/robot_${p}_${c}.png`);
-    images[c][p] = img;
-  });
-});
-
-// Game constants
-const GROUND = 400;
-const GRAVITY = 0.6;
-const P_WIND = 8;
-const P_SWING = 6;
-const P_HOLD = 4;
-const P_RECOVER = 12;
-const P_TOTAL = P_WIND + P_SWING + P_HOLD + P_RECOVER;
-const PUNCH_DAMAGE = 10;
-const PUNCH_COOLDOWN = 20;
-const HIT_STUN = 14;
-const KNOCKBACK = 8;
-
-function createFighter(x, color) {
-  return {
-    x, y: GROUND, vx: 0, vy: 0,
-    color,
-    facingRight: true,
-    health: 100,
-    bob: Math.random() * Math.PI * 2,
-    punchT: 0,
-    punchCD: 0,
-    hitStun: 0,
-    shakeX: 0,
-    hasHit: false,
-  };
-}
-
-let p1, p2, gameOver, winner;
-const keys = {};
-
-function init() {
-  p1 = createFighter(250, 'blue');
-  p2 = createFighter(550, 'red');
-  gameOver = false;
-  winner = null;
-  document.getElementById('p1-health').style.width = '100%';
-  document.getElementById('p2-health').style.width = '100%';
-  requestAnimationFrame(loop);
-}
-
-document.addEventListener('keydown', e => {
-  keys[e.key] = true;
-  keys[e.key.toLowerCase()] = true;
-  e.preventDefault();
-});
-document.addEventListener('keyup', e => {
-  keys[e.key] = false;
-  keys[e.key.toLowerCase()] = false;
-});
-
-function punchPhase(t) {
-  if (t <= 0) return { p: 'idle', f: 0 };
-  const e = P_TOTAL - t;
-  if (e < P_WIND) return { p: 'wind', f: e / P_WIND };
-  if (e < P_WIND + P_SWING) return { p: 'swing', f: (e - P_WIND) / P_SWING };
-  if (e < P_WIND + P_SWING + P_HOLD) return { p: 'hold', f: 1 };
-  return { p: 'recover', f: (e - P_WIND - P_SWING - P_HOLD) / P_RECOVER };
-}
-
-function easeOut(t) { return 1 - (1 - t) * (1 - t); }
-function easeIn(t) { return t * t; }
-
-// All angles defined for LEFT-facing robot.
-// Positive = clockwise in canvas (arm swings down/back).
-// Negative = counter-clockwise (arm swings up/forward for a punch).
-function getAngles(fighter) {
-  const { p, f } = punchPhase(fighter.punchT);
-  let upperArm = 0, forearm = 0, head = 0, torso = 0, leg = 0;
-
-  upperArm = Math.sin(fighter.bob * 0.5) * 0.03;
-
-  switch (p) {
-    case 'wind':
-      upperArm = 0.4 * easeOut(f);
-      forearm = 0.5 * easeOut(f);
-      torso = 0.04 * easeOut(f);
-      head = -0.04 * easeOut(f);
-      break;
-    case 'swing':
-      upperArm = 0.4 - 1.2 * easeIn(f);
-      forearm = 0.5 - 1.2 * easeOut(f);
-      torso = 0.04 - 0.14 * easeOut(f);
-      head = -0.04 + 0.08 * f;
-      break;
-    case 'hold':
-      upperArm = -0.8;
-      forearm = -0.7;
-      torso = -0.1;
-      head = 0.04;
-      break;
-    case 'recover':
-      upperArm = -0.8 * (1 - easeOut(f));
-      forearm = -0.7 * (1 - easeOut(f));
-      torso = -0.1 * (1 - easeOut(f));
-      head = 0.04 * (1 - f);
-      break;
-  }
-
-  if (fighter.hitStun > 0) {
-    const s = fighter.hitStun / HIT_STUN;
-    head = 0.2 * s;
-    torso = 0.08 * s;
-  }
-
-  if (Math.abs(fighter.vx) > 1 && fighter.y >= GROUND) {
-    leg = Math.sin(fighter.bob * 3) * 0.12;
-  }
-  if (fighter.y < GROUND) {
-    leg = -0.1;
-  }
-
-  return { upperArm, forearm, head, torso, leg };
-}
-
-function updateFighter(f, opp, kL, kR, kJ, kP) {
-  if (gameOver) return;
-  f.bob += 0.08;
-  if (f.hitStun > 0) {
-    f.hitStun--;
-    f.shakeX = f.hitStun > 0 ? (Math.random() - 0.5) * 6 : 0;
-  }
-  if (f.punchCD > 0) f.punchCD--;
-  if (f.punchT > 0) f.punchT--;
-  if (f.punchT === 0) f.hasHit = false;
-
-  if (f.hitStun <= 0) {
-    if (keys[kL]) f.vx = -4;
-    else if (keys[kR]) f.vx = 4;
-    else f.vx *= 0.8;
-    if (keys[kJ] && f.y >= GROUND) f.vy = -12;
-    if (keys[kP] && f.punchT === 0 && f.punchCD === 0) {
-      f.punchT = P_TOTAL;
-      f.punchCD = PUNCH_COOLDOWN;
-      f.hasHit = false;
-    }
-  } else {
-    f.vx *= 0.85;
-  }
-
-  f.vy += GRAVITY;
-  f.x += f.vx;
-  f.y += f.vy;
-  if (f.y > GROUND) { f.y = GROUND; f.vy = 0; }
-  f.x = Math.max(60, Math.min(canvas.width - 60, f.x));
-  f.facingRight = f.x < opp.x;
-
-  const { p } = punchPhase(f.punchT);
-  if ((p === 'swing' || p === 'hold') && !f.hasHit) {
-    const dir = f.facingRight ? 1 : -1;
-    const fistX = f.x + dir * 85;
-    if (Math.abs(fistX - opp.x) < 50 && Math.abs(f.y - opp.y) < 80 && opp.hitStun <= 0) {
-      opp.health = Math.max(0, opp.health - PUNCH_DAMAGE);
-      opp.hitStun = HIT_STUN;
-      opp.vx = dir * KNOCKBACK;
-      opp.vy = -3;
-      f.hasHit = true;
-      if (opp.health <= 0) {
-        gameOver = true;
-        winner = f === p1 ? 'BLUE' : 'RED';
-      }
-    }
-  }
-}
-
-// Draw a sprite part. The sprite is drawn in a coordinate system where
-// (0,0) is the fighter's feet position (before flip).
-// All sprite pixels map: sprite(sx,sy) -> local((sx-CX)*S, (sy-FY)*S)
-function drawImg(color, part) {
-  ctx.drawImage(images[color][part], -CX * S, -FY * S, SS * S, SS * S);
-}
-
-// Rotate around a sprite-space joint point
-function rotateAroundJoint(joint, angle) {
-  const lx = (joint.x - CX) * S;
-  const ly = (joint.y - FY) * S;
-  ctx.translate(lx, ly);
-  ctx.rotate(angle);
-  ctx.translate(-lx, -ly);
-}
-
-function drawFighter(f) {
-  const a = getAngles(f);
-  const bobY = Math.sin(f.bob) * 2;
-
-  ctx.save();
-
-  // Position fighter, flip if facing right
-  ctx.translate(f.x + f.shakeX, f.y + bobY);
-  if (f.facingRight) ctx.scale(-1, 1);
-
-  // Hit flash
-  if (f.hitStun > 0 && Math.floor(f.hitStun / 2) % 2 === 0) {
-    ctx.globalAlpha = 0.4;
-  }
-
-  // --- BACK LEG (drawn first, behind everything) ---
-  ctx.save();
-  ctx.translate(5, 0);
-  rotateAroundJoint(HIP_BACK, -a.leg);
-  drawImg(f.color, 'leg_back');
-  ctx.restore();
-
-  // --- BACK ARM (behind torso) ---
-  ctx.save();
-  ctx.translate(5, 0);
-  rotateAroundJoint(TORSO_CENTER, a.torso);
-  ctx.save();
-  rotateAroundJoint(SHOULDER_BACK, a.upperArm * 0.3);
-  drawImg(f.color, 'upper_arm_back');
-  ctx.save();
-  rotateAroundJoint(ELBOW_BACK, a.forearm * 0.3);
-  drawImg(f.color, 'forearm_back');
-  ctx.restore();
-  ctx.restore();
-  ctx.restore();
-
-  // --- FRONT LEG ---
-  ctx.save();
-  rotateAroundJoint(HIP_FRONT, a.leg);
-  drawImg(f.color, 'leg_front');
-  ctx.restore();
-
-  // --- TORSO ---
-  ctx.save();
-  rotateAroundJoint(TORSO_CENTER, a.torso);
-  drawImg(f.color, 'torso');
-  ctx.restore();
-
-  // --- FRONT ARM (in front of torso) ---
-  ctx.save();
-  ctx.translate(-3, 0); // shift front arm slightly toward viewer
-  rotateAroundJoint(TORSO_CENTER, a.torso);
-  ctx.save();
-  rotateAroundJoint(SHOULDER_FRONT, a.upperArm);
-  drawImg(f.color, 'upper_arm_front');
-  ctx.save();
-  rotateAroundJoint(ELBOW_FRONT, a.forearm);
-  drawImg(f.color, 'forearm_front');
-  ctx.restore();
-  ctx.restore();
-  ctx.restore();
-
-  // --- HEAD (on top of everything) ---
-  ctx.save();
-  rotateAroundJoint(TORSO_CENTER, a.torso);
-  rotateAroundJoint(NECK, a.head);
-  drawImg(f.color, 'head');
-  ctx.restore();
-
-  ctx.globalAlpha = 1;
-  ctx.restore();
-}
-
-function drawHitSpark(f) {
-  if (f.hitStun > HIT_STUN - 5) {
-    const cx = f.x + (f.facingRight ? -25 : 25);
-    const cy = f.y - 60;
-    const progress = (HIT_STUN - f.hitStun) / 5;
-    const r = 5 + progress * 20;
-    ctx.save();
-    ctx.globalAlpha = 0.8 * (1 - progress);
-    ctx.fillStyle = '#ffee44';
-    ctx.beginPath();
-    for (let i = 0; i < 10; i++) {
-      const a = (i / 10) * Math.PI * 2;
-      const rr = i % 2 === 0 ? r : r * 0.4;
-      ctx[i === 0 ? 'moveTo' : 'lineTo'](cx + Math.cos(a) * rr, cy + Math.sin(a) * rr);
-    }
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-  }
-}
-
-function drawBackground() {
-  ctx.fillStyle = '#0f0f23';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#2a2a4a';
-  ctx.fillRect(0, GROUND + 30, canvas.width, canvas.height - GROUND);
-  ctx.strokeStyle = '#444';
-  ctx.lineWidth = 3;
-  [GROUND - 120, GROUND - 70, GROUND - 20].forEach(y => {
-    ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(780, y); ctx.stroke();
-  });
-  ctx.fillStyle = '#555';
-  ctx.fillRect(15, GROUND - 140, 10, 170);
-  ctx.fillRect(775, GROUND - 140, 10, 170);
-  ctx.strokeStyle = '#3a3a5a';
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(0, GROUND + 30); ctx.lineTo(800, GROUND + 30); ctx.stroke();
-}
-
-function loop() {
-  drawBackground();
-
-  updateFighter(p1, p2, 'a', 'd', 'w', 's');
-  updateFighter(p2, p1, 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown');
-
-  const [back, front] = p1.x < p2.x ? [p1, p2] : [p2, p1];
-  drawFighter(back);
-  drawFighter(front);
-  drawHitSpark(p1);
-  drawHitSpark(p2);
-
-  document.getElementById('p1-health').style.width = p1.health + '%';
-  document.getElementById('p2-health').style.width = p2.health + '%';
-
-  if (gameOver) {
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(0, 0, 800, 500);
-    ctx.fillStyle = winner === 'BLUE' ? '#144be5' : '#d9006a';
-    ctx.font = 'bold 48px Courier New';
-    ctx.textAlign = 'center';
-    ctx.fillText(winner + ' WINS!', 400, 230);
-    ctx.fillStyle = '#aaa';
-    ctx.font = '18px Courier New';
-    return;
-  }
-
-  requestAnimationFrame(loop);
-}
-</script>
+<div id="root"></div>
+<script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

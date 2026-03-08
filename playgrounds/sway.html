@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sway Playground</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    color: #fff;
+    font-family: monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .preview {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .robot-wrap {
+    position: absolute;
+  }
+  .robot-wrap img {
+    max-height: 70vh;
+    width: auto;
+  }
+  .robot-wrap.blue { right: 50%; margin-right: 20px; }
+  .robot-wrap.red { left: 50%; margin-left: 20px; }
+  .controls {
+    background: #111;
+    padding: 16px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 8px 24px;
+    border-top: 1px solid #333;
+  }
+  .control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .control label {
+    min-width: 120px;
+    font-size: 12px;
+  }
+  .control input[type="range"] { flex: 1; }
+  .control .val { min-width: 50px; text-align: right; font-size: 12px; }
+  .output {
+    background: #1a1a1a;
+    padding: 12px 24px;
+    border-top: 1px solid #333;
+    font-size: 11px;
+    white-space: pre;
+    overflow-x: auto;
+    max-height: 120px;
+  }
+  #canvas-trail {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="preview" id="preview">
+  <canvas id="canvas-trail"></canvas>
+  <div class="robot-wrap blue" id="blue-wrap">
+    <img src="sprites/robot_full_blue.png" alt="Blue" id="blue-img">
+  </div>
+  <div class="robot-wrap red" id="red-wrap">
+    <img src="sprites/robot_full_red.png" alt="Red" id="red-img">
+  </div>
+</div>
+<div class="controls">
+  <div class="control">
+    <label>Sway X (px)</label>
+    <input type="range" id="swayX" min="0" max="60" value="12">
+    <span class="val" id="swayX-val">12</span>
+  </div>
+  <div class="control">
+    <label>Bob Y (px)</label>
+    <input type="range" id="bobY" min="0" max="40" value="7">
+    <span class="val" id="bobY-val">7</span>
+  </div>
+  <div class="control">
+    <label>Cycle (s)</label>
+    <input type="range" id="cycle" min="1" max="12" value="6" step="0.5">
+    <span class="val" id="cycle-val">6</span>
+  </div>
+  <div class="control">
+    <label>Pause at ends</label>
+    <input type="range" id="pause" min="0" max="0.5" value="0" step="0.05">
+    <span class="val" id="pause-val">0</span>
+  </div>
+  <div class="control">
+    <label>Desync (s)</label>
+    <input type="range" id="desync" min="0" max="3" value="0.75" step="0.05">
+    <span class="val" id="desync-val">0.75</span>
+  </div>
+  <div class="control">
+    <label>Bob shape</label>
+    <input type="range" id="bobShape" min="0.5" max="4" value="1" step="0.1">
+    <span class="val" id="bobShape-val">1</span>
+  </div>
+  <div class="control">
+    <label>Show trail</label>
+    <input type="checkbox" id="showTrail" checked>
+  </div>
+</div>
+<div class="output" id="output"></div>
+
+<script>
+const blueWrap = document.getElementById('blue-wrap');
+const redWrap = document.getElementById('red-wrap');
+const blueImg = document.getElementById('blue-img');
+const redImg = document.getElementById('red-img');
+const canvas = document.getElementById('canvas-trail');
+const ctx = canvas.getContext('2d');
+const preview = document.getElementById('preview');
+const output = document.getElementById('output');
+
+const sliders = ['swayX', 'bobY', 'cycle', 'pause', 'desync', 'bobShape'];
+const params = {};
+
+function readParams() {
+  sliders.forEach(id => {
+    const el = document.getElementById(id);
+    params[id] = parseFloat(el.value);
+    document.getElementById(id + '-val').textContent = el.value;
+  });
+  params.showTrail = document.getElementById('showTrail').checked;
+}
+
+sliders.forEach(id => {
+  document.getElementById(id).addEventListener('input', () => { readParams(); updateOutput(); });
+});
+document.getElementById('showTrail').addEventListener('change', () => { readParams(); });
+
+function easeInOut(t) {
+  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+}
+
+function swayPos(t, swayX, bobY, pause) {
+  // t is 0..1 over one full cycle
+  // With pause: hold at ends for `pause` fraction of the half-cycle
+  // Each half-cycle: pause -> move -> pause
+  // Full cycle: left-pause, move-right, right-pause, move-left
+
+  const halfPause = pause; // fraction of half-cycle spent pausing at each end
+  const moveTime = 1 - halfPause; // fraction of half-cycle spent moving
+
+  let half = t < 0.5 ? 0 : 1;
+  let ht = half === 0 ? t * 2 : (t - 0.5) * 2; // 0..1 within half
+
+  let moveT;
+  if (ht < halfPause / 2) {
+    moveT = 0;
+  } else if (ht > 1 - halfPause / 2) {
+    moveT = 1;
+  } else {
+    moveT = (ht - halfPause / 2) / moveTime;
+  }
+
+  let easedT = easeInOut(moveT);
+
+  let x, y;
+  if (half === 0) {
+    // moving from left to right
+    x = -swayX + easedT * 2 * swayX;
+  } else {
+    // moving from right to left
+    x = swayX - easedT * 2 * swayX;
+  }
+
+  // Y: bob up (negative) in the middle of each swing
+  // Power > 1 = gentler at ends (flatter bottom), sharper peak
+  // Power < 1 = steeper at ends, flatter peak
+  const shape = params.bobShape || 1;
+  y = -bobY * Math.pow(Math.sin(moveT * Math.PI), shape);
+
+  return { x, y };
+}
+
+let startTime = null;
+const trail = [];
+
+function animate(timestamp) {
+  if (!startTime) startTime = timestamp;
+  const elapsed = (timestamp - startTime) / 1000;
+
+  const { swayX, bobY, cycle, pause, desync, showTrail } = params;
+  const halfCycle = cycle / 2;
+
+  // Blue
+  const tBlue = (elapsed % cycle) / cycle;
+  const posBlue = swayPos(tBlue, swayX, bobY, pause);
+  blueWrap.style.transform = `translateX(${posBlue.x}px)`;
+  blueImg.style.transform = `scaleX(-1) translateY(${posBlue.y}px)`;
+
+  // Red
+  const tRed = ((elapsed + desync) % cycle) / cycle;
+  const posRed = swayPos(tRed, swayX, bobY, pause);
+  redWrap.style.transform = `translateX(${-posRed.x}px)`;
+  redImg.style.transform = `scaleX(-1) translateY(${posRed.y}px)`;
+
+  // Trail
+  canvas.width = preview.clientWidth;
+  canvas.height = preview.clientHeight;
+
+  if (showTrail) {
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    // Draw the full path
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(100, 150, 255, 0.4)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i <= 200; i++) {
+      const st = i / 200;
+      const sp = swayPos(st, swayX, bobY, pause);
+      const px = cx - 100 + sp.x;
+      const py = cy + sp.y;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Current position dot
+    const dotX = cx - 100 + posBlue.x;
+    const dotY = cy + posBlue.y;
+    ctx.beginPath();
+    ctx.fillStyle = '#4488ff';
+    ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function updateOutput() {
+  const { swayX, bobY, cycle, pause, desync } = params;
+  const { bobShape } = params;
+  output.textContent = `/* Sway: ${swayX}px  Bob: ${bobY}px  Cycle: ${cycle}s  Pause: ${pause}  Desync: ${desync}s  BobShape: ${bobShape} */`;
+}
+
+readParams();
+updateOutput();
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>
