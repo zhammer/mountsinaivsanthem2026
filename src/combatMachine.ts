@@ -15,7 +15,7 @@ interface CombatContext {
 }
 
 function randomDelay() {
-  return 3000 + Math.random() * 6000;
+  return 5000 + Math.random() * 7000;
 }
 
 function isCrit() {
@@ -44,7 +44,7 @@ export const combatMachine = setup({
   delays: {
     PUNCH_DELAY: randomDelay,
     HOLD_DELAY: ({ context }: { context: CombatContext }) =>
-      context.lastHit?.crit ? 800 : 400,
+      context.lastHit?.crit ? 800 : 1600,
     CRIT_HOLD_DELAY: () => 1600,
     RETRACT_DELAY: ({ context }: { context: CombatContext }) =>
       context.lastHit?.crit ? 400 : 200,
@@ -61,6 +61,9 @@ export const combatMachine = setup({
     ready: {
       on: {
         PUNCH: "punching",
+      },
+      after: {
+        PUNCH_DELAY: "punching",
       },
     },
     punching: {
