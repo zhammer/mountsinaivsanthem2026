@@ -268,7 +268,7 @@ export default function App() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                only recently stated
+                recently stated
               </a>{" "}
               that "No New Yorker should have to fear losing access to health
               care" (while admirably standing beside the New York State Nurses
