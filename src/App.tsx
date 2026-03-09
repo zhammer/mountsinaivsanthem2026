@@ -323,7 +323,7 @@ export default function App() {
             <p className="info-credit">
               NOTE: These statements are all sourced from public forums (Reddit,
               Facebook, Instagram, news article comments, etc.) I haven't
-              included any note that includes personally identifiable
+              included any note that contains personally identifiable
               information. That being said, if you see something that you
               believe should be removed,{" "}
               <a href="mailto:zach.the.hammer@gmail.com">email me</a>.
