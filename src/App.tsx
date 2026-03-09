@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useMachine } from "@xstate/react";
+import { Analytics } from "@vercel/analytics/react";
 import { combatMachine } from "./combatMachine";
 import { startSway, setPaused } from "./sway";
 import { TESTIMONIALS } from "./testimonials";
@@ -348,6 +349,7 @@ export default function App() {
           </div>
         </div>
       )}
+      <Analytics />
     </>
   );
 }
