@@ -316,7 +316,7 @@ export default function App() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Sebastián Espinoza.
+                Sebastián Espinoza
               </a>
               .
             </p>
