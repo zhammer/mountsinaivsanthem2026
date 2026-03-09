@@ -309,7 +309,7 @@ export default function App() {
               &#x2192; key or tap blue robot for blue punch.
             </p>
             <p className="info-credit">
-              CREDITS: Made by Zach Hammer. Rock 'Em Sock 'Em Robots 3D model by{" "}
+              CREDITS: Rock 'Em Sock 'Em Robots 3D model by{" "}
               <a
                 href="https://sketchfab.com/3d-models/rock-em-sock-em-robots-85f17c83f71a4acb85867881cd67b649"
                 target="_blank"
