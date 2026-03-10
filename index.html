@@ -83,6 +83,193 @@
   .leg-front, .leg-back {
     will-change: transform;
   }
+  /* Sway animation keyframes */
+  @keyframes sway-body {
+    0% { transform: scaleX(-1) translate(-12px, 0px); }
+    5% { transform: scaleX(-1) translate(-11.7px, -0.42px); }
+    10% { transform: scaleX(-1) translate(-10.37px, -2.09px); }
+    15% { transform: scaleX(-1) translate(-7.98px, -4.36px); }
+    20% { transform: scaleX(-1) translate(-4.52px, -6.26px); }
+    25% { transform: scaleX(-1) translate(0px, -7px); }
+    30% { transform: scaleX(-1) translate(4.52px, -6.26px); }
+    35% { transform: scaleX(-1) translate(7.98px, -4.36px); }
+    40% { transform: scaleX(-1) translate(10.37px, -2.09px); }
+    45% { transform: scaleX(-1) translate(11.7px, -0.42px); }
+    50% { transform: scaleX(-1) translate(12px, 0px); }
+    55% { transform: scaleX(-1) translate(11.7px, -0.42px); }
+    60% { transform: scaleX(-1) translate(10.37px, -2.09px); }
+    65% { transform: scaleX(-1) translate(7.98px, -4.36px); }
+    70% { transform: scaleX(-1) translate(4.52px, -6.26px); }
+    75% { transform: scaleX(-1) translate(0px, -7px); }
+    80% { transform: scaleX(-1) translate(-4.52px, -6.26px); }
+    85% { transform: scaleX(-1) translate(-7.98px, -4.36px); }
+    90% { transform: scaleX(-1) translate(-10.37px, -2.09px); }
+    95% { transform: scaleX(-1) translate(-11.7px, -0.42px); }
+    100% { transform: scaleX(-1) translate(-12px, 0px); }
+  }
+  @keyframes sway-front-shoulder {
+    0% { transform: translateX(-3px) rotate(26deg); }
+    5% { transform: translateX(-2.92px) rotate(26.03deg); }
+    10% { transform: translateX(-2.59px) rotate(26.14deg); }
+    15% { transform: translateX(-1.99px) rotate(26.34deg); }
+    20% { transform: translateX(-1.13px) rotate(26.62deg); }
+    25% { transform: translateX(0px) rotate(27deg); }
+    30% { transform: translateX(1.13px) rotate(27.38deg); }
+    35% { transform: translateX(2px) rotate(27.67deg); }
+    40% { transform: translateX(2.59px) rotate(27.86deg); }
+    45% { transform: translateX(2.93px) rotate(27.98deg); }
+    50% { transform: translateX(3px) rotate(28deg); }
+    55% { transform: translateX(2.93px) rotate(27.98deg); }
+    60% { transform: translateX(2.59px) rotate(27.86deg); }
+    65% { transform: translateX(2px) rotate(27.67deg); }
+    70% { transform: translateX(1.13px) rotate(27.38deg); }
+    75% { transform: translateX(0px) rotate(27deg); }
+    80% { transform: translateX(-1.13px) rotate(26.62deg); }
+    85% { transform: translateX(-1.99px) rotate(26.34deg); }
+    90% { transform: translateX(-2.59px) rotate(26.14deg); }
+    95% { transform: translateX(-2.92px) rotate(26.03deg); }
+    100% { transform: translateX(-3px) rotate(26deg); }
+  }
+  @keyframes sway-front-elbow {
+    0% { transform: rotate(20.5deg); }
+    5% { transform: rotate(20.51deg); }
+    10% { transform: rotate(20.57deg); }
+    15% { transform: rotate(20.67deg); }
+    20% { transform: rotate(20.81deg); }
+    25% { transform: rotate(21deg); }
+    30% { transform: rotate(21.19deg); }
+    35% { transform: rotate(21.33deg); }
+    40% { transform: rotate(21.43deg); }
+    45% { transform: rotate(21.49deg); }
+    50% { transform: rotate(21.5deg); }
+    55% { transform: rotate(21.49deg); }
+    60% { transform: rotate(21.43deg); }
+    65% { transform: rotate(21.33deg); }
+    70% { transform: rotate(21.19deg); }
+    75% { transform: rotate(21deg); }
+    80% { transform: rotate(20.81deg); }
+    85% { transform: rotate(20.67deg); }
+    90% { transform: rotate(20.57deg); }
+    95% { transform: rotate(20.51deg); }
+    100% { transform: rotate(20.5deg); }
+  }
+  @keyframes sway-back-shoulder {
+    0% { transform: translate(13px, -6px) rotate(27.6deg); }
+    5% { transform: translate(12.93px, -6px) rotate(27.59deg); }
+    10% { transform: translate(12.59px, -6px) rotate(27.52deg); }
+    15% { transform: translate(12px, -6px) rotate(27.4deg); }
+    20% { transform: translate(11.13px, -6px) rotate(27.23deg); }
+    25% { transform: translate(10px, -6px) rotate(27deg); }
+    30% { transform: translate(8.87px, -6px) rotate(26.77deg); }
+    35% { transform: translate(8px, -6px) rotate(26.6deg); }
+    40% { transform: translate(7.41px, -6px) rotate(26.48deg); }
+    45% { transform: translate(7.08px, -6px) rotate(26.42deg); }
+    50% { transform: translate(7px, -6px) rotate(26.4deg); }
+    55% { transform: translate(7.08px, -6px) rotate(26.42deg); }
+    60% { transform: translate(7.41px, -6px) rotate(26.48deg); }
+    65% { transform: translate(8px, -6px) rotate(26.6deg); }
+    70% { transform: translate(8.87px, -6px) rotate(26.77deg); }
+    75% { transform: translate(10px, -6px) rotate(27deg); }
+    80% { transform: translate(11.13px, -6px) rotate(27.23deg); }
+    85% { transform: translate(12px, -6px) rotate(27.4deg); }
+    90% { transform: translate(12.59px, -6px) rotate(27.52deg); }
+    95% { transform: translate(12.93px, -6px) rotate(27.59deg); }
+    100% { transform: translate(13px, -6px) rotate(27.6deg); }
+  }
+  @keyframes sway-back-elbow {
+    0% { transform: rotate(23deg); }
+    5% { transform: rotate(22.95deg); }
+    10% { transform: rotate(22.73deg); }
+    15% { transform: rotate(22.33deg); }
+    20% { transform: rotate(21.75deg); }
+    25% { transform: rotate(21deg); }
+    30% { transform: rotate(20.25deg); }
+    35% { transform: rotate(19.67deg); }
+    40% { transform: rotate(19.27deg); }
+    45% { transform: rotate(19.05deg); }
+    50% { transform: rotate(19deg); }
+    55% { transform: rotate(19.05deg); }
+    60% { transform: rotate(19.27deg); }
+    65% { transform: rotate(19.67deg); }
+    70% { transform: rotate(20.25deg); }
+    75% { transform: rotate(21deg); }
+    80% { transform: rotate(21.75deg); }
+    85% { transform: rotate(22.33deg); }
+    90% { transform: rotate(22.73deg); }
+    95% { transform: rotate(22.95deg); }
+    100% { transform: rotate(23deg); }
+  }
+  @keyframes sway-leg-front {
+    0% { transform: translateX(-2px); }
+    5% { transform: translateX(-1.95px); }
+    10% { transform: translateX(-1.73px); }
+    15% { transform: translateX(-1.33px); }
+    20% { transform: translateX(-0.75px); }
+    25% { transform: translateX(0px); }
+    30% { transform: translateX(0.75px); }
+    35% { transform: translateX(1.33px); }
+    40% { transform: translateX(1.73px); }
+    45% { transform: translateX(1.95px); }
+    50% { transform: translateX(2px); }
+    55% { transform: translateX(1.95px); }
+    60% { transform: translateX(1.73px); }
+    65% { transform: translateX(1.33px); }
+    70% { transform: translateX(0.75px); }
+    75% { transform: translateX(0px); }
+    80% { transform: translateX(-0.75px); }
+    85% { transform: translateX(-1.33px); }
+    90% { transform: translateX(-1.73px); }
+    95% { transform: translateX(-1.95px); }
+    100% { transform: translateX(-2px); }
+  }
+  @keyframes sway-leg-back {
+    0% { transform: translate(12px, -6px); }
+    5% { transform: translate(11.95px, -6px); }
+    10% { transform: translate(11.73px, -6px); }
+    15% { transform: translate(11.33px, -6px); }
+    20% { transform: translate(10.75px, -6px); }
+    25% { transform: translate(10px, -6px); }
+    30% { transform: translate(9.25px, -6px); }
+    35% { transform: translate(8.67px, -6px); }
+    40% { transform: translate(8.27px, -6px); }
+    45% { transform: translate(8.05px, -6px); }
+    50% { transform: translate(8px, -6px); }
+    55% { transform: translate(8.05px, -6px); }
+    60% { transform: translate(8.27px, -6px); }
+    65% { transform: translate(8.67px, -6px); }
+    70% { transform: translate(9.25px, -6px); }
+    75% { transform: translate(10px, -6px); }
+    80% { transform: translate(10.75px, -6px); }
+    85% { transform: translate(11.33px, -6px); }
+    90% { transform: translate(11.73px, -6px); }
+    95% { transform: translate(11.95px, -6px); }
+    100% { transform: translate(12px, -6px); }
+  }
+  /* Sway animation application */
+  .robot-wrap.red.sway-active {
+    animation: sway-body 4s linear infinite;
+  }
+  .robot-wrap.blue.sway-active {
+    animation: sway-body 4s -2s linear infinite;
+  }
+  .sway-active .shoulder-pivot {
+    animation: sway-front-shoulder 4s linear infinite;
+  }
+  .sway-active .elbow-pivot {
+    animation: sway-front-elbow 4s linear infinite;
+  }
+  .sway-active .back-shoulder-pivot {
+    animation: sway-back-shoulder 4s linear infinite;
+  }
+  .sway-active .back-elbow-pivot {
+    animation: sway-back-elbow 4s linear infinite;
+  }
+  .sway-active .leg-front {
+    animation: sway-leg-front 4s linear infinite;
+  }
+  .sway-active .leg-back {
+    animation: sway-leg-back 4s linear infinite;
+  }
   /* Pivot joints (front + back arms) */
   .shoulder-pivot, .elbow-pivot,
   .back-shoulder-pivot, .back-elbow-pivot {

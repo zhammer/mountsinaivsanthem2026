@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useMachine } from "@xstate/react";
 import { Analytics } from "@vercel/analytics/react";
 import { combatMachine } from "./combatMachine";
@@ -79,7 +79,7 @@ export default function App() {
   const lastHitCountRef = useRef(0);
   const holdingTriggeredRef = useRef(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setPaused(isPunching);
   }, [isPunching]);
 
