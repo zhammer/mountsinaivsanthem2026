@@ -74,6 +74,9 @@
   .blue .back-part {
     transform: translate(10px, -6px);
   }
+  .forearm {
+    z-index: 1;
+  }
   .leg-front, .leg-back {
     will-change: transform;
   }
@@ -118,20 +121,20 @@
     transition: none;
   }
   .retracting .shoulder-pivot {
-    transform: rotate(27deg);
+    transform: translateX(-3px) rotate(26deg);
     transition: transform 0.2s ease-in;
   }
   .retracting .elbow-pivot {
-    transform: rotate(21deg);
+    transform: rotate(20.5deg);
     transition: transform 0.2s ease-in;
   }
   /* Crit: slower fist retract to match head */
   .crit-retracting .shoulder-pivot {
-    transform: rotate(27deg);
+    transform: translateX(-3px) rotate(26deg);
     transition: transform 0.4s ease-in;
   }
   .crit-retracting .elbow-pivot {
-    transform: rotate(21deg);
+    transform: rotate(20.5deg);
     transition: transform 0.4s ease-in;
   }
   /* Head hit reaction — starts at holding (after fist lands) */

@@ -83,9 +83,32 @@ function cacheEls(wrap: HTMLElement): RobotEls {
   };
 }
 
-function clearArmStyles(els: RobotEls) {
-  els.frontShoulder.style.transform = '';
-  els.frontElbow.style.transform = '';
+function snapToClosest(els: RobotEls) {
+  // xNorm = -1 at closest position for both robots
+  const xNorm = -1;
+  const shift = xNorm * ARM_SHIFT;
+  const legShift = xNorm * LEG_SHIFT;
+
+  // Only clear front arm if this robot is punching (has a punch phase class)
+  // Otherwise set to closest-position sway values so defending robot doesn't jump
+  const cl = els.parts.classList;
+  const isPuncher = cl.contains('punching') || cl.contains('holding') ||
+    cl.contains('critHolding') || cl.contains('retracting') ||
+    cl.contains('crit-retracting');
+
+  if (isPuncher) {
+    els.frontShoulder.style.transform = '';
+    els.frontElbow.style.transform = '';
+  } else {
+    els.frontShoulder.style.transform = `translateX(${shift}px) rotate(${REST_SHOULDER + xNorm * ARM_SWAY}deg)`;
+    els.frontElbow.style.transform = `rotate(${REST_ELBOW + xNorm * ARM_SWAY * 0.5}deg)`;
+  }
+
+  // Snap back arms and legs to the closest-together sway state
+  els.backShoulder.style.transform = `translate(${10 - shift}px, -6px) rotate(${REST_BACK_SHOULDER - xNorm * ARM_SWAY * 0.6}deg)`;
+  els.backElbow.style.transform = `rotate(${REST_BACK_ELBOW - xNorm * ARM_SWAY * 2}deg)`;
+  els.legFront.style.transform = `translateX(${legShift}px)`;
+  els.legBack.style.transform = `translate(${10 - legShift}px, -6px)`;
 }
 
 function updateParts(els: RobotEls, xNorm: number) {
@@ -118,8 +141,8 @@ export function startSway(blueWrap: HTMLElement, redWrap: HTMLElement) {
     if (paused) {
       blueWrap.style.transform = `scaleX(-1) translate(${-SWAY_X}px, 0px)`;
       redWrap.style.transform = `scaleX(-1) translate(${SWAY_X}px, 0px)`;
-      clearArmStyles(blue);
-      clearArmStyles(red);
+      snapToClosest(blue);
+      snapToClosest(red);
       start = null;
       requestAnimationFrame(tick);
       return;
