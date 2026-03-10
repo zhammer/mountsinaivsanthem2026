@@ -9,6 +9,8 @@ const BOB_SHAPE = 2;
 const ARM_SWAY = 1;
 // How many pixels the arms shift laterally (simulates torso rotation)
 const ARM_SHIFT = 3;
+// How many pixels the legs shift laterally
+const LEG_SHIFT = 2;
 
 // Resting angles for the guard stance
 const REST_SHOULDER = 27;
@@ -94,6 +96,17 @@ function updateArms(wrap: HTMLElement, xNorm: number) {
   }
   if (backElbow) {
     backElbow.style.transform = `rotate(${REST_BACK_ELBOW - xNorm * ARM_SWAY * 2}deg)`;
+  }
+
+  // Legs shift laterally to simulate torso rotation
+  const legShift = xNorm * LEG_SHIFT;
+  const legFront = wrap.querySelector('.leg-front') as HTMLElement | null;
+  const legBack = wrap.querySelector('.leg-back') as HTMLElement | null;
+  if (legFront) {
+    legFront.style.transform = `translateX(${legShift}px)`;
+  }
+  if (legBack) {
+    legBack.style.transform = `translate(${10 - legShift}px, -6px)`;
   }
 }
 

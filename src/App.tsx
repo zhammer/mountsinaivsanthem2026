@@ -43,11 +43,11 @@ function Robot({
           <Sprite part="upper_arm_back" color={color} />
         </div>
       </div>
-      <Sprite part="leg_back" color={color} className="back-part" />
+      <Sprite part="leg_back" color={color} className="back-part leg-back" />
       {/* Body */}
       <Sprite part="head" color={color} className="head" />
       <Sprite part="torso" color={color} />
-      <Sprite part="leg_front" color={color} />
+      <Sprite part="leg_front" color={color} className="leg-front" />
       {/* Front arm with pivot joints */}
       <div className="shoulder-pivot">
         <Sprite part="forearm_front" color={color} />
