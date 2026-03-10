@@ -59,71 +59,67 @@ function swayPos(t: number): { x: number; y: number } {
   return { x, y };
 }
 
-function clearArmStyles(wrap: HTMLElement) {
-  const els = wrap.querySelectorAll('.shoulder-pivot, .elbow-pivot');
-  els.forEach((el) => (el as HTMLElement).style.transform = '');
+interface RobotEls {
+  wrap: HTMLElement;
+  parts: HTMLElement;
+  frontShoulder: HTMLElement;
+  frontElbow: HTMLElement;
+  backShoulder: HTMLElement;
+  backElbow: HTMLElement;
+  legFront: HTMLElement;
+  legBack: HTMLElement;
 }
 
-function updateArms(wrap: HTMLElement, xNorm: number) {
-  // xNorm: -1 = fully forward, +1 = fully back
-  const parts = wrap.querySelector('.robot-parts');
-  if (!parts) return;
+function cacheEls(wrap: HTMLElement): RobotEls {
+  return {
+    wrap,
+    parts: wrap.querySelector('.robot-parts')!,
+    frontShoulder: wrap.querySelector('.shoulder-pivot')!,
+    frontElbow: wrap.querySelector('.elbow-pivot')!,
+    backShoulder: wrap.querySelector('.back-shoulder-pivot')!,
+    backElbow: wrap.querySelector('.back-elbow-pivot')!,
+    legFront: wrap.querySelector('.leg-front')!,
+    legBack: wrap.querySelector('.leg-back')!,
+  };
+}
 
-  // Don't touch front arm if a punch phase is active (CSS handles it)
-  const isPunchPhase = parts.classList.contains('punching') ||
-    parts.classList.contains('holding') ||
-    parts.classList.contains('critHolding') ||
-    parts.classList.contains('retracting') ||
-    parts.classList.contains('crit-retracting');
+function clearArmStyles(els: RobotEls) {
+  els.frontShoulder.style.transform = '';
+  els.frontElbow.style.transform = '';
+}
 
-  if (isPunchPhase) return;
+function updateParts(els: RobotEls, xNorm: number) {
+  // Don't touch anything if a punch phase is active (CSS handles it)
+  const cl = els.parts.classList;
+  if (cl.contains('punching') || cl.contains('holding') ||
+      cl.contains('critHolding') || cl.contains('retracting') ||
+      cl.contains('crit-retracting')) return;
 
-  const frontShoulder = wrap.querySelector('.shoulder-pivot') as HTMLElement | null;
-  const frontElbow = wrap.querySelector('.elbow-pivot') as HTMLElement | null;
   const shift = xNorm * ARM_SHIFT;
 
-  if (frontShoulder) {
-    frontShoulder.style.transform = `translateX(${shift}px) rotate(${REST_SHOULDER + xNorm * ARM_SWAY}deg)`;
-  }
-  if (frontElbow) {
-    frontElbow.style.transform = `rotate(${REST_ELBOW + xNorm * ARM_SWAY * 0.5}deg)`;
-  }
+  els.frontShoulder.style.transform = `translateX(${shift}px) rotate(${REST_SHOULDER + xNorm * ARM_SWAY}deg)`;
+  els.frontElbow.style.transform = `rotate(${REST_ELBOW + xNorm * ARM_SWAY * 0.5}deg)`;
+  els.backShoulder.style.transform = `translate(${10 - shift}px, -6px) rotate(${REST_BACK_SHOULDER - xNorm * ARM_SWAY * 0.6}deg)`;
+  els.backElbow.style.transform = `rotate(${REST_BACK_ELBOW - xNorm * ARM_SWAY * 2}deg)`;
 
-  const backShoulder = wrap.querySelector('.back-shoulder-pivot') as HTMLElement | null;
-  const backElbow = wrap.querySelector('.back-elbow-pivot') as HTMLElement | null;
-  if (backShoulder) {
-    backShoulder.style.transform = `translate(${10 - shift}px, -6px) rotate(${REST_BACK_SHOULDER - xNorm * ARM_SWAY * 0.6}deg)`;
-  }
-  if (backElbow) {
-    backElbow.style.transform = `rotate(${REST_BACK_ELBOW - xNorm * ARM_SWAY * 2}deg)`;
-  }
-
-  // Legs shift laterally to simulate torso rotation
   const legShift = xNorm * LEG_SHIFT;
-  const legFront = wrap.querySelector('.leg-front') as HTMLElement | null;
-  const legBack = wrap.querySelector('.leg-back') as HTMLElement | null;
-  if (legFront) {
-    legFront.style.transform = `translateX(${legShift}px)`;
-  }
-  if (legBack) {
-    legBack.style.transform = `translate(${10 - legShift}px, -6px)`;
-  }
+  els.legFront.style.transform = `translateX(${legShift}px)`;
+  els.legBack.style.transform = `translate(${10 - legShift}px, -6px)`;
 }
 
 export function startSway(blueWrap: HTMLElement, redWrap: HTMLElement) {
+  const blue = cacheEls(blueWrap);
+  const red = cacheEls(redWrap);
   let start: number | null = null;
 
   function tick(timestamp: number) {
     if (!start) start = timestamp;
 
     if (paused) {
-      // Snap to closest-to-each-other position
       blueWrap.style.transform = `scaleX(-1) translate(${-SWAY_X}px, 0px)`;
       redWrap.style.transform = `scaleX(-1) translate(${SWAY_X}px, 0px)`;
-      // Clear front arm inline styles so CSS punch transitions take over
-      clearArmStyles(blueWrap);
-      clearArmStyles(redWrap);
-      // Reset start so sway resumes from t=0 (inward position)
+      clearArmStyles(blue);
+      clearArmStyles(red);
       start = null;
       requestAnimationFrame(tick);
       return;
@@ -134,14 +130,12 @@ export function startSway(blueWrap: HTMLElement, redWrap: HTMLElement) {
     const tBlue = (elapsed % CYCLE) / CYCLE;
     const posBlue = swayPos(tBlue);
     blueWrap.style.transform = `scaleX(-1) translate(${posBlue.x}px, ${posBlue.y}px)`;
-    // For blue, negative x = leaning forward (toward red)
-    updateArms(blueWrap, posBlue.x / SWAY_X);
+    updateParts(blue, posBlue.x / SWAY_X);
 
     const tRed = ((elapsed + DESYNC) % CYCLE) / CYCLE;
     const posRed = swayPos(tRed);
     redWrap.style.transform = `scaleX(-1) translate(${posRed.x}px, ${posRed.y}px)`;
-    // For red, positive x = leaning forward (toward blue)
-    updateArms(redWrap, -posRed.x / SWAY_X);
+    updateParts(red, -posRed.x / SWAY_X);
 
     requestAnimationFrame(tick);
   }
