@@ -1,79 +1,109 @@
-const SWAY_X = 12;
-const BOB_Y = 7;
-const CYCLE = 4;
-const PAUSE = 0.05;
-const DESYNC = CYCLE / 2;
-const BOB_SHAPE = 2;
+// CSS-driven sway animation with JS pause/resume for punches.
+// Keyframes are defined in index.html. This module just toggles them.
 
+// Snap-to-closest values (cycle position 0% = robots closest together)
+const SNAP_BODY_BLUE = 'scaleX(-1) translate(-12px, 0px)';
+const SNAP_BODY_RED = 'scaleX(-1) translate(12px, 0px)';
+const SNAP_FRONT_SHOULDER = 'translateX(-3px) rotate(26deg)';
+const SNAP_FRONT_ELBOW = 'rotate(20.5deg)';
+const SNAP_BACK_SHOULDER = 'translate(13px, -6px) rotate(27.6deg)';
+const SNAP_BACK_ELBOW = 'rotate(23deg)';
+const SNAP_LEG_FRONT = 'translateX(-2px)';
+const SNAP_LEG_BACK = 'translate(12px, -6px)';
+
+interface RobotEls {
+  wrap: HTMLElement;
+  parts: HTMLElement;
+  frontShoulder: HTMLElement;
+  frontElbow: HTMLElement;
+  backShoulder: HTMLElement;
+  backElbow: HTMLElement;
+  legFront: HTMLElement;
+  legBack: HTMLElement;
+}
+
+function cacheEls(wrap: HTMLElement): RobotEls {
+  return {
+    wrap,
+    parts: wrap.querySelector('.robot-parts')!,
+    frontShoulder: wrap.querySelector('.shoulder-pivot')!,
+    frontElbow: wrap.querySelector('.elbow-pivot')!,
+    backShoulder: wrap.querySelector('.back-shoulder-pivot')!,
+    backElbow: wrap.querySelector('.back-elbow-pivot')!,
+    legFront: wrap.querySelector('.leg-front')!,
+    legBack: wrap.querySelector('.leg-back')!,
+  };
+}
+
+let blueEls: RobotEls;
+let redEls: RobotEls;
 let paused = false;
 
+function snapAll(els: RobotEls, isBlue: boolean) {
+  els.wrap.style.transform = isBlue ? SNAP_BODY_BLUE : SNAP_BODY_RED;
+  els.frontShoulder.style.transform = SNAP_FRONT_SHOULDER;
+  els.frontElbow.style.transform = SNAP_FRONT_ELBOW;
+  els.backShoulder.style.transform = SNAP_BACK_SHOULDER;
+  els.backElbow.style.transform = SNAP_BACK_ELBOW;
+  els.legFront.style.transform = SNAP_LEG_FRONT;
+  els.legBack.style.transform = SNAP_LEG_BACK;
+}
+
+function clearPuncherArms(els: RobotEls) {
+  const cl = els.parts.classList;
+  const isPuncher = cl.contains('punching') || cl.contains('holding') ||
+    cl.contains('critHolding') || cl.contains('retracting') ||
+    cl.contains('crit-retracting');
+  if (isPuncher) {
+    els.frontShoulder.style.transform = '';
+    els.frontElbow.style.transform = '';
+  }
+}
+
+function clearInlineStyles(els: RobotEls) {
+  els.wrap.style.transform = '';
+  els.frontShoulder.style.transform = '';
+  els.frontElbow.style.transform = '';
+  els.backShoulder.style.transform = '';
+  els.backElbow.style.transform = '';
+  els.legFront.style.transform = '';
+  els.legBack.style.transform = '';
+}
+
 export function setPaused(p: boolean) {
-  if (p && !paused) {
-    paused = true;
-  } else if (!p && paused) {
-    paused = false;
-  }
-}
+  if (p === paused) return;
+  paused = p;
 
-function easeInOut(t: number): number {
-  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-}
+  if (p) {
+    // 1. Stop CSS animations
+    blueEls.wrap.classList.remove('sway-active');
+    redEls.wrap.classList.remove('sway-active');
 
-function swayPos(t: number): { x: number; y: number } {
-  const halfPause = PAUSE;
-  const moveTime = 1 - halfPause;
+    // 2. Set ALL snap inline styles (including puncher arms)
+    //    to establish a stable "from" value for punch transitions
+    snapAll(blueEls, true);
+    snapAll(redEls, false);
 
-  const half = t < 0.5 ? 0 : 1;
-  const ht = half === 0 ? t * 2 : (t - 0.5) * 2;
+    // 3. Force reflow so browser registers the snap as the current position
+    void blueEls.wrap.offsetHeight;
 
-  let moveT: number;
-  if (ht < halfPause / 2) {
-    moveT = 0;
-  } else if (ht > 1 - halfPause / 2) {
-    moveT = 1;
+    // 4. Clear puncher's front arm inline styles so CSS punch rules take over.
+    //    The transition fires from the snap value to the punch value.
+    clearPuncherArms(blueEls);
+    clearPuncherArms(redEls);
   } else {
-    moveT = (ht - halfPause / 2) / moveTime;
+    // Clear inline snap styles and restart CSS animations from 0%.
+    // 0% of the keyframe matches the snap position (closest together).
+    clearInlineStyles(blueEls);
+    clearInlineStyles(redEls);
+    blueEls.wrap.classList.add('sway-active');
+    redEls.wrap.classList.add('sway-active');
   }
-
-  const easedT = easeInOut(moveT);
-
-  const x = half === 0
-    ? -SWAY_X + easedT * 2 * SWAY_X
-    : SWAY_X - easedT * 2 * SWAY_X;
-
-  const y = -BOB_Y * Math.pow(Math.sin(moveT * Math.PI), BOB_SHAPE);
-
-  return { x, y };
 }
 
 export function startSway(blueWrap: HTMLElement, redWrap: HTMLElement) {
-  let start: number | null = null;
-
-  function tick(timestamp: number) {
-    if (!start) start = timestamp;
-
-    if (paused) {
-      // Snap to closest-to-each-other position
-      blueWrap.style.transform = `scaleX(-1) translate(${-SWAY_X}px, 0px)`;
-      redWrap.style.transform = `scaleX(-1) translate(${SWAY_X}px, 0px)`;
-      // Reset start so sway resumes from t=0 (inward position)
-      start = null;
-      requestAnimationFrame(tick);
-      return;
-    }
-
-    const elapsed = (timestamp - start) / 1000;
-
-    const tBlue = (elapsed % CYCLE) / CYCLE;
-    const posBlue = swayPos(tBlue);
-    blueWrap.style.transform = `scaleX(-1) translate(${posBlue.x}px, ${posBlue.y}px)`;
-
-    const tRed = ((elapsed + DESYNC) % CYCLE) / CYCLE;
-    const posRed = swayPos(tRed);
-    redWrap.style.transform = `scaleX(-1) translate(${posRed.x}px, ${posRed.y}px)`;
-
-    requestAnimationFrame(tick);
-  }
-
-  requestAnimationFrame(tick);
+  blueEls = cacheEls(blueWrap);
+  redEls = cacheEls(redWrap);
+  blueWrap.classList.add('sway-active');
+  redWrap.classList.add('sway-active');
 }

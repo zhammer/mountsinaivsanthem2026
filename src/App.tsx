@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useMachine } from "@xstate/react";
 import { Analytics } from "@vercel/analytics/react";
 import { combatMachine } from "./combatMachine";
@@ -36,20 +36,25 @@ function Robot({
 }) {
   return (
     <div className={`robot-parts ${punchPhase} ${hitPhase}`}>
-      {/* Back parts (behind everything) */}
-      <Sprite part="upper_arm_back" color={color} className="back-part" />
-      <Sprite part="forearm_back" color={color} className="back-part" />
-      <Sprite part="leg_back" color={color} className="back-part" />
+      {/* Back arm with pivot joints */}
+      <div className="back-shoulder-pivot">
+        <Sprite part="forearm_back" color={color} />
+        <div className="back-elbow-pivot">
+          <Sprite part="upper_arm_back" color={color} />
+        </div>
+      </div>
+      <Sprite part="leg_back" color={color} className="back-part leg-back" />
       {/* Body */}
       <Sprite part="head" color={color} className="head" />
       <Sprite part="torso" color={color} />
-      <Sprite part="leg_front" color={color} />
+      <Sprite part="leg_front" color={color} className="leg-front" />
+      <div className="click-target" />
       {/* Front arm with pivot joints */}
       <div className="shoulder-pivot">
-        <Sprite part="forearm_front" color={color} />
         <div className="elbow-pivot">
           <Sprite part="upper_arm_front" color={color} />
         </div>
+        <Sprite part="forearm_front" color={color} />
       </div>
     </div>
   );
@@ -75,7 +80,7 @@ export default function App() {
   const lastHitCountRef = useRef(0);
   const holdingTriggeredRef = useRef(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setPaused(isPunching);
   }, [isPunching]);
 
@@ -134,7 +139,21 @@ export default function App() {
 
   return (
     <>
-      <div className="arena">
+      <div
+        className="arena"
+        onClick={(e) => {
+          if (!state.matches("ready")) return;
+          if (!(e.target as HTMLElement).classList.contains("click-target"))
+            return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const center = rect.left + rect.width / 2;
+          if (e.clientX < center) {
+            send({ type: "PUNCH_LEFT" });
+          } else {
+            send({ type: "PUNCH_RIGHT" });
+          }
+        }}
+      >
         <div className="day-counter">
           Day{" "}
           {Math.floor(
@@ -164,7 +183,6 @@ export default function App() {
             isPunching && punchSide === "left" ? " punching-wrap" : ""
           }`}
           ref={redRef}
-          onClick={() => state.matches("ready") && send({ type: "PUNCH_LEFT" })}
         >
           <Robot
             color="red"
@@ -187,9 +205,6 @@ export default function App() {
             isPunching && punchSide === "right" ? " punching-wrap" : ""
           }`}
           ref={blueRef}
-          onClick={() =>
-            state.matches("ready") && send({ type: "PUNCH_RIGHT" })
-          }
         >
           <Robot
             color="blue"
