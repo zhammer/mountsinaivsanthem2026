@@ -2,256 +2,346 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sway Playground</title>
+<title>Sway Animation Playground</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #000;
-    color: #fff;
-    font-family: monospace;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
+  body { background: #111; color: #ccc; font-family: system-ui, sans-serif; display: flex; height: 100vh; }
+
+  .controls {
+    width: 320px;
+    padding: 20px;
+    border-right: 1px solid #333;
+    overflow-y: auto;
+    flex-shrink: 0;
   }
+  .controls h2 { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .controls h3 { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 10px; border-top: 1px solid #333; padding-top: 12px; }
+  .control-group { margin-bottom: 14px; }
+  .control-group label { display: block; font-size: 13px; margin-bottom: 6px; color: #aaa; }
+  .control-group .value { color: #ffd700; font-family: monospace; font-size: 13px; }
+  .control-group input[type="range"] { width: 100%; accent-color: #ffd700; }
+
+  .right-side { flex: 1; display: flex; flex-direction: column; }
+
   .preview {
     flex: 1;
+    background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
     overflow: hidden;
   }
+
+  .robot-scene { display: flex; align-items: center; justify-content: center; }
+
   .robot-wrap {
-    position: absolute;
-  }
-  .robot-wrap img {
-    max-height: 70vh;
-    width: auto;
-  }
-  .robot-wrap.blue { right: 50%; margin-right: 20px; }
-  .robot-wrap.red { left: 50%; margin-left: 20px; }
-  .controls {
-    background: #111;
-    padding: 16px 24px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 8px 24px;
-    border-top: 1px solid #333;
-  }
-  .control {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 8px;
+    will-change: transform;
   }
-  .control label {
-    min-width: 120px;
-    font-size: 12px;
+  .robot-wrap.red { margin-right: -80px; z-index: 0; }
+  .robot-wrap.blue { margin-left: -80px; z-index: 0; }
+
+  .robot-parts {
+    position: relative;
+    height: 70vh;
+    aspect-ratio: 1;
   }
-  .control input[type="range"] { flex: 1; }
-  .control .val { min-width: 50px; text-align: right; font-size: 12px; }
-  .output {
-    background: #1a1a1a;
-    padding: 12px 24px;
-    border-top: 1px solid #333;
-    font-size: 11px;
-    white-space: pre;
-    overflow-x: auto;
-    max-height: 120px;
-  }
-  #canvas-trail {
+  .blue .robot-parts { transform: scaleX(-1); }
+
+  .robot-part {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    pointer-events: none;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    will-change: transform;
   }
+  .back-part { transform: translate(10px, -6px); }
+
+  .shoulder-pivot, .elbow-pivot,
+  .back-shoulder-pivot, .back-elbow-pivot {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  .shoulder-pivot { transform-origin: 52.1% 23.2%; }
+  .elbow-pivot { transform-origin: 53.9% 39.4%; }
+  .back-shoulder-pivot { transform-origin: 52.1% 23.2%; transform: translate(10px, -6px); }
+  .back-elbow-pivot { transform-origin: 53.9% 39.4%; }
+
+  .prompt-area {
+    border-top: 1px solid #333;
+    padding: 16px 20px;
+    background: #1a1a1a;
+    position: relative;
+  }
+  .prompt-area pre {
+    font-family: monospace; font-size: 12px; line-height: 1.5;
+    color: #ccc; white-space: pre-wrap; margin: 0; padding-right: 80px;
+  }
+  .copy-btn {
+    position: absolute; top: 12px; right: 16px;
+    background: #333; border: 1px solid #555; color: #ccc;
+    padding: 4px 12px; cursor: pointer; font-size: 12px; font-family: monospace;
+  }
+  .copy-btn:hover { border-color: #ffd700; color: #ffd700; }
+  .pin-btn {
+    background: #222; border: 1px solid #444; color: #ccc; padding: 6px 12px;
+    font-size: 12px; cursor: pointer; font-family: monospace;
+  }
+  .pin-btn:hover { border-color: #ffd700; color: #ffd700; }
 </style>
 </head>
 <body>
-<div class="preview" id="preview">
-  <canvas id="canvas-trail"></canvas>
-  <div class="robot-wrap blue" id="blue-wrap">
-    <img src="sprites/robot_full_blue.png" alt="Blue" id="blue-img">
-  </div>
-  <div class="robot-wrap red" id="red-wrap">
-    <img src="sprites/robot_full_red.png" alt="Red" id="red-img">
-  </div>
-</div>
+
 <div class="controls">
-  <div class="control">
-    <label>Sway X (px)</label>
-    <input type="range" id="swayX" min="0" max="60" value="12">
-    <span class="val" id="swayX-val">12</span>
+  <h2>Sway Animation</h2>
+
+  <h3>Body Sway</h3>
+  <div class="control-group">
+    <label>Sway X (px): <span class="value" id="swayX-val">12</span></label>
+    <input type="range" id="swayX" min="0" max="30" value="12" step="1" oninput="updateAll()">
   </div>
-  <div class="control">
-    <label>Bob Y (px)</label>
-    <input type="range" id="bobY" min="0" max="40" value="7">
-    <span class="val" id="bobY-val">7</span>
+  <div class="control-group">
+    <label>Bob Y (px): <span class="value" id="bobY-val">7</span></label>
+    <input type="range" id="bobY" min="0" max="20" value="7" step="1" oninput="updateAll()">
   </div>
-  <div class="control">
-    <label>Cycle (s)</label>
-    <input type="range" id="cycle" min="1" max="12" value="6" step="0.5">
-    <span class="val" id="cycle-val">6</span>
+  <div class="control-group">
+    <label>Cycle (s): <span class="value" id="cycle-val">4</span></label>
+    <input type="range" id="cycle" min="1" max="8" value="4" step="0.5" oninput="updateAll()">
   </div>
-  <div class="control">
-    <label>Pause at ends</label>
-    <input type="range" id="pause" min="0" max="0.5" value="0" step="0.05">
-    <span class="val" id="pause-val">0</span>
+
+  <h3>Front Arm</h3>
+  <div class="control-group">
+    <label>Rotation (°): <span class="value" id="armSway-val">1</span></label>
+    <input type="range" id="armSway" min="0" max="10" value="1" step="0.5" oninput="updateAll()">
   </div>
-  <div class="control">
-    <label>Desync (s)</label>
-    <input type="range" id="desync" min="0" max="3" value="0.75" step="0.05">
-    <span class="val" id="desync-val">0.75</span>
+  <div class="control-group">
+    <label>Shift X (px): <span class="value" id="frontShift-val">3</span></label>
+    <input type="range" id="frontShift" min="0" max="15" value="3" step="0.5" oninput="updateAll()">
   </div>
-  <div class="control">
-    <label>Bob shape</label>
-    <input type="range" id="bobShape" min="0.5" max="4" value="1" step="0.1">
-    <span class="val" id="bobShape-val">1</span>
+  <div class="control-group">
+    <label>Elbow rotation mult: <span class="value" id="frontElbowMult-val">0.5</span></label>
+    <input type="range" id="frontElbowMult" min="0" max="2" value="0.5" step="0.1" oninput="updateAll()">
   </div>
-  <div class="control">
-    <label>Show trail</label>
-    <input type="checkbox" id="showTrail" checked>
+
+  <h3>Back Arm</h3>
+  <div class="control-group">
+    <label>Rotation mult: <span class="value" id="backRotMult-val">0.6</span></label>
+    <input type="range" id="backRotMult" min="0" max="3" value="0.6" step="0.1" oninput="updateAll()">
+  </div>
+  <div class="control-group">
+    <label>Shift X (px): <span class="value" id="backShift-val">3</span></label>
+    <input type="range" id="backShift" min="0" max="15" value="3" step="0.5" oninput="updateAll()">
+  </div>
+  <div class="control-group">
+    <label>Elbow rotation mult: <span class="value" id="backElbowMult-val">0.3</span></label>
+    <input type="range" id="backElbowMult" min="0" max="2" value="0.3" step="0.1" oninput="updateAll()">
+  </div>
+
+  <h3>Rest Angles</h3>
+  <div class="control-group">
+    <label>Shoulder: <span class="value" id="restShoulder-val">27°</span></label>
+    <input type="range" id="restShoulder" min="0" max="60" value="27" step="1" oninput="updateAll()">
+  </div>
+  <div class="control-group">
+    <label>Elbow: <span class="value" id="restElbow-val">21°</span></label>
+    <input type="range" id="restElbow" min="-30" max="45" value="21" step="1" oninput="updateAll()">
+  </div>
+
+  <h3>Pin Position</h3>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <button class="pin-btn" onclick="setPin('forward')">Pin Forward</button>
+    <button class="pin-btn" onclick="setPin('back')">Pin Back</button>
+    <button class="pin-btn" onclick="setPin(null)">Animate</button>
   </div>
 </div>
-<div class="output" id="output"></div>
+
+<div class="right-side">
+  <div class="preview">
+    <div class="robot-scene">
+      <div class="robot-wrap red" id="red-wrap">
+        <div class="robot-parts">
+          <div class="back-shoulder-pivot" id="red-back-shoulder">
+            <img class="robot-part" src="../public/sprites/robot_forearm_back_red.png">
+            <div class="back-elbow-pivot" id="red-back-elbow">
+              <img class="robot-part" src="../public/sprites/robot_upper_arm_back_red.png">
+            </div>
+          </div>
+          <img class="robot-part back-part" src="../public/sprites/robot_leg_back_red.png">
+          <img class="robot-part" src="../public/sprites/robot_head_red.png">
+          <img class="robot-part" src="../public/sprites/robot_torso_red.png">
+          <img class="robot-part" src="../public/sprites/robot_leg_front_red.png">
+          <div class="shoulder-pivot" id="red-shoulder">
+            <div class="elbow-pivot" id="red-elbow">
+              <img class="robot-part" src="../public/sprites/robot_upper_arm_front_red.png">
+            </div>
+            <img class="robot-part" src="../public/sprites/robot_forearm_front_red.png">
+          </div>
+        </div>
+      </div>
+
+      <div class="robot-wrap blue" id="blue-wrap">
+        <div class="robot-parts">
+          <div class="back-shoulder-pivot" id="blue-back-shoulder">
+            <img class="robot-part" src="../public/sprites/robot_forearm_back_blue.png">
+            <div class="back-elbow-pivot" id="blue-back-elbow">
+              <img class="robot-part" src="../public/sprites/robot_upper_arm_back_blue.png">
+            </div>
+          </div>
+          <img class="robot-part back-part" src="../public/sprites/robot_leg_back_blue.png">
+          <img class="robot-part" src="../public/sprites/robot_head_blue.png">
+          <img class="robot-part" src="../public/sprites/robot_torso_blue.png">
+          <img class="robot-part" src="../public/sprites/robot_leg_front_blue.png">
+          <div class="shoulder-pivot" id="blue-shoulder">
+            <div class="elbow-pivot" id="blue-elbow">
+              <img class="robot-part" src="../public/sprites/robot_upper_arm_front_blue.png">
+            </div>
+            <img class="robot-part" src="../public/sprites/robot_forearm_front_blue.png">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prompt-area">
+    <pre id="prompt"></pre>
+    <button class="copy-btn" onclick="copyPrompt()">Copy</button>
+  </div>
+</div>
 
 <script>
-const blueWrap = document.getElementById('blue-wrap');
-const redWrap = document.getElementById('red-wrap');
-const blueImg = document.getElementById('blue-img');
-const redImg = document.getElementById('red-img');
-const canvas = document.getElementById('canvas-trail');
-const ctx = canvas.getContext('2d');
-const preview = document.getElementById('preview');
-const output = document.getElementById('output');
+const S = {
+  swayX: 12, bobY: 7, cycle: 4,
+  armSway: 1, frontShift: 3, frontElbowMult: 0.5,
+  backRotMult: 0.6, backShift: 3, backElbowMult: 0.3,
+  restShoulder: 27, restElbow: 21,
+};
 
-const sliders = ['swayX', 'bobY', 'cycle', 'pause', 'desync', 'bobShape'];
-const params = {};
+const fields = [
+  'swayX','bobY','cycle',
+  'armSway','frontShift','frontElbowMult',
+  'backRotMult','backShift','backElbowMult',
+  'restShoulder','restElbow',
+];
 
-function readParams() {
-  sliders.forEach(id => {
-    const el = document.getElementById(id);
-    params[id] = parseFloat(el.value);
-    document.getElementById(id + '-val').textContent = el.value;
+function updateAll() {
+  fields.forEach(f => {
+    S[f] = +document.getElementById(f).value;
+    const suffix = (f === 'restShoulder' || f === 'restElbow') ? '°' : '';
+    document.getElementById(f + '-val').textContent = S[f] + suffix;
   });
-  params.showTrail = document.getElementById('showTrail').checked;
+  updatePrompt();
 }
 
-sliders.forEach(id => {
-  document.getElementById(id).addEventListener('input', () => { readParams(); updateOutput(); });
-});
-document.getElementById('showTrail').addEventListener('change', () => { readParams(); });
+function updatePrompt() {
+  document.getElementById('prompt').textContent =
+`// sway.ts constants
+const SWAY_X = ${S.swayX};
+const BOB_Y = ${S.bobY};
+const CYCLE = ${S.cycle};
+const ARM_SWAY = ${S.armSway};
+const ARM_SHIFT = ${S.frontShift};
+const REST_SHOULDER = ${S.restShoulder};
+const REST_ELBOW = ${S.restElbow};
+
+// Front arm: shiftX ${S.frontShift}px, rotation ${S.armSway}°, elbow mult ${S.frontElbowMult}
+// Back arm: shiftX ${S.backShift}px, rotation mult ${S.backRotMult}, elbow mult ${S.backElbowMult}`;
+}
+
+function copyPrompt() {
+  navigator.clipboard.writeText(document.getElementById('prompt').textContent);
+  const btn = document.querySelector('.copy-btn');
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy', 1500);
+}
+
+// --- Sway engine ---
+const PAUSE_FRAC = 0.05;
+const BOB_SHAPE = 2;
 
 function easeInOut(t) {
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 }
 
-function swayPos(t, swayX, bobY, pause) {
-  // t is 0..1 over one full cycle
-  // With pause: hold at ends for `pause` fraction of the half-cycle
-  // Each half-cycle: pause -> move -> pause
-  // Full cycle: left-pause, move-right, right-pause, move-left
-
-  const halfPause = pause; // fraction of half-cycle spent pausing at each end
-  const moveTime = 1 - halfPause; // fraction of half-cycle spent moving
-
-  let half = t < 0.5 ? 0 : 1;
-  let ht = half === 0 ? t * 2 : (t - 0.5) * 2; // 0..1 within half
+function swayPos(t) {
+  const halfPause = PAUSE_FRAC;
+  const moveTime = 1 - halfPause;
+  const half = t < 0.5 ? 0 : 1;
+  const ht = half === 0 ? t * 2 : (t - 0.5) * 2;
 
   let moveT;
-  if (ht < halfPause / 2) {
-    moveT = 0;
-  } else if (ht > 1 - halfPause / 2) {
-    moveT = 1;
-  } else {
-    moveT = (ht - halfPause / 2) / moveTime;
-  }
+  if (ht < halfPause / 2) moveT = 0;
+  else if (ht > 1 - halfPause / 2) moveT = 1;
+  else moveT = (ht - halfPause / 2) / moveTime;
 
-  let easedT = easeInOut(moveT);
-
-  let x, y;
-  if (half === 0) {
-    // moving from left to right
-    x = -swayX + easedT * 2 * swayX;
-  } else {
-    // moving from right to left
-    x = swayX - easedT * 2 * swayX;
-  }
-
-  // Y: bob up (negative) in the middle of each swing
-  // Power > 1 = gentler at ends (flatter bottom), sharper peak
-  // Power < 1 = steeper at ends, flatter peak
-  const shape = params.bobShape || 1;
-  y = -bobY * Math.pow(Math.sin(moveT * Math.PI), shape);
-
+  const easedT = easeInOut(moveT);
+  const x = half === 0
+    ? -S.swayX + easedT * 2 * S.swayX
+    : S.swayX - easedT * 2 * S.swayX;
+  const y = -S.bobY * Math.pow(Math.sin(moveT * Math.PI), BOB_SHAPE);
   return { x, y };
 }
 
-let startTime = null;
-const trail = [];
+function updateArms(wrap, xNorm) {
+  const frontShift = xNorm * S.frontShift;
+  const backShift = xNorm * S.backShift;
 
-function animate(timestamp) {
-  if (!startTime) startTime = timestamp;
-  const elapsed = (timestamp - startTime) / 1000;
+  const fs = wrap.querySelector('.shoulder-pivot');
+  const fe = wrap.querySelector('.elbow-pivot');
+  if (fs) fs.style.transform = `translateX(${frontShift}px) rotate(${S.restShoulder + xNorm * S.armSway}deg)`;
+  if (fe) fe.style.transform = `rotate(${S.restElbow + xNorm * S.armSway * S.frontElbowMult}deg)`;
 
-  const { swayX, bobY, cycle, pause, desync, showTrail } = params;
-  const halfCycle = cycle / 2;
+  const bs = wrap.querySelector('.back-shoulder-pivot');
+  const be = wrap.querySelector('.back-elbow-pivot');
+  if (bs) bs.style.transform = `translate(${10 - backShift}px, -6px) rotate(${S.restShoulder - xNorm * S.armSway * S.backRotMult}deg)`;
+  if (be) be.style.transform = `rotate(${S.restElbow - xNorm * S.armSway * S.backElbowMult}deg)`;
+}
 
-  // Blue
-  const tBlue = (elapsed % cycle) / cycle;
-  const posBlue = swayPos(tBlue, swayX, bobY, pause);
-  blueWrap.style.transform = `translateX(${posBlue.x}px)`;
-  blueImg.style.transform = `scaleX(-1) translateY(${posBlue.y}px)`;
+const blueWrap = document.getElementById('blue-wrap');
+const redWrap = document.getElementById('red-wrap');
+let start = null;
+let pinned = null; // null, 'forward', or 'back'
 
-  // Red
-  const tRed = ((elapsed + desync) % cycle) / cycle;
-  const posRed = swayPos(tRed, swayX, bobY, pause);
-  redWrap.style.transform = `translateX(${-posRed.x}px)`;
-  redImg.style.transform = `scaleX(-1) translateY(${posRed.y}px)`;
+function setPin(val) { pinned = val; }
 
-  // Trail
-  canvas.width = preview.clientWidth;
-  canvas.height = preview.clientHeight;
+function tick(timestamp) {
+  if (!start) start = timestamp;
 
-  if (showTrail) {
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-
-    // Draw the full path
-    ctx.beginPath();
-    ctx.strokeStyle = 'rgba(100, 150, 255, 0.4)';
-    ctx.lineWidth = 2;
-    for (let i = 0; i <= 200; i++) {
-      const st = i / 200;
-      const sp = swayPos(st, swayX, bobY, pause);
-      const px = cx - 100 + sp.x;
-      const py = cy + sp.y;
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-
-    // Current position dot
-    const dotX = cx - 100 + posBlue.x;
-    const dotY = cy + posBlue.y;
-    ctx.beginPath();
-    ctx.fillStyle = '#4488ff';
-    ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
-    ctx.fill();
+  if (pinned) {
+    // xNorm: 1 = forward (toward opponent), -1 = back
+    const xNorm = pinned === 'forward' ? -1 : 1;
+    const x = pinned === 'forward' ? S.swayX : -S.swayX;
+    blueWrap.style.transform = `scaleX(-1) translate(${x}px, 0px)`;
+    redWrap.style.transform = `scaleX(-1) translate(${-x}px, 0px)`;
+    updateArms(blueWrap, xNorm);
+    updateArms(redWrap, xNorm);
+    start = null;
+    requestAnimationFrame(tick);
+    return;
   }
 
-  requestAnimationFrame(animate);
+  const elapsed = (timestamp - start) / 1000;
+  const desync = S.cycle / 2;
+
+  const tBlue = (elapsed % S.cycle) / S.cycle;
+  const posBlue = swayPos(tBlue);
+  blueWrap.style.transform = `scaleX(-1) translate(${posBlue.x}px, ${posBlue.y}px)`;
+  updateArms(blueWrap, posBlue.x / S.swayX);
+
+  const tRed = ((elapsed + desync) % S.cycle) / S.cycle;
+  const posRed = swayPos(tRed);
+  redWrap.style.transform = `scaleX(-1) translate(${posRed.x}px, ${posRed.y}px)`;
+  updateArms(redWrap, -posRed.x / S.swayX);
+
+  requestAnimationFrame(tick);
 }
 
-function updateOutput() {
-  const { swayX, bobY, cycle, pause, desync } = params;
-  const { bobShape } = params;
-  output.textContent = `/* Sway: ${swayX}px  Bob: ${bobY}px  Cycle: ${cycle}s  Pause: ${pause}  Desync: ${desync}s  BobShape: ${bobShape} */`;
-}
-
-readParams();
-updateOutput();
-requestAnimationFrame(animate);
+updateAll();
+requestAnimationFrame(tick);
 </script>
 </body>
 </html>

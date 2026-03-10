@@ -5,6 +5,17 @@ const PAUSE = 0.05;
 const DESYNC = CYCLE / 2;
 const BOB_SHAPE = 2;
 
+// How much the arms shift (in degrees) relative to sway
+const ARM_SWAY = 1;
+// How many pixels the arms shift laterally (simulates torso rotation)
+const ARM_SHIFT = 3;
+
+// Resting angles for the guard stance
+const REST_SHOULDER = 27;
+const REST_ELBOW = 21;
+const REST_BACK_SHOULDER = 27;
+const REST_BACK_ELBOW = 21;
+
 let paused = false;
 
 export function setPaused(p: boolean) {
@@ -46,6 +57,46 @@ function swayPos(t: number): { x: number; y: number } {
   return { x, y };
 }
 
+function clearArmStyles(wrap: HTMLElement) {
+  const els = wrap.querySelectorAll('.shoulder-pivot, .elbow-pivot');
+  els.forEach((el) => (el as HTMLElement).style.transform = '');
+}
+
+function updateArms(wrap: HTMLElement, xNorm: number) {
+  // xNorm: -1 = fully forward, +1 = fully back
+  const parts = wrap.querySelector('.robot-parts');
+  if (!parts) return;
+
+  // Don't touch front arm if a punch phase is active (CSS handles it)
+  const isPunchPhase = parts.classList.contains('punching') ||
+    parts.classList.contains('holding') ||
+    parts.classList.contains('critHolding') ||
+    parts.classList.contains('retracting') ||
+    parts.classList.contains('crit-retracting');
+
+  if (isPunchPhase) return;
+
+  const frontShoulder = wrap.querySelector('.shoulder-pivot') as HTMLElement | null;
+  const frontElbow = wrap.querySelector('.elbow-pivot') as HTMLElement | null;
+  const shift = xNorm * ARM_SHIFT;
+
+  if (frontShoulder) {
+    frontShoulder.style.transform = `translateX(${shift}px) rotate(${REST_SHOULDER + xNorm * ARM_SWAY}deg)`;
+  }
+  if (frontElbow) {
+    frontElbow.style.transform = `rotate(${REST_ELBOW + xNorm * ARM_SWAY * 0.5}deg)`;
+  }
+
+  const backShoulder = wrap.querySelector('.back-shoulder-pivot') as HTMLElement | null;
+  const backElbow = wrap.querySelector('.back-elbow-pivot') as HTMLElement | null;
+  if (backShoulder) {
+    backShoulder.style.transform = `translate(${10 - shift}px, -6px) rotate(${REST_BACK_SHOULDER - xNorm * ARM_SWAY * 0.6}deg)`;
+  }
+  if (backElbow) {
+    backElbow.style.transform = `rotate(${REST_BACK_ELBOW - xNorm * ARM_SWAY * 2}deg)`;
+  }
+}
+
 export function startSway(blueWrap: HTMLElement, redWrap: HTMLElement) {
   let start: number | null = null;
 
@@ -56,6 +107,9 @@ export function startSway(blueWrap: HTMLElement, redWrap: HTMLElement) {
       // Snap to closest-to-each-other position
       blueWrap.style.transform = `scaleX(-1) translate(${-SWAY_X}px, 0px)`;
       redWrap.style.transform = `scaleX(-1) translate(${SWAY_X}px, 0px)`;
+      // Clear front arm inline styles so CSS punch transitions take over
+      clearArmStyles(blueWrap);
+      clearArmStyles(redWrap);
       // Reset start so sway resumes from t=0 (inward position)
       start = null;
       requestAnimationFrame(tick);
@@ -67,10 +121,14 @@ export function startSway(blueWrap: HTMLElement, redWrap: HTMLElement) {
     const tBlue = (elapsed % CYCLE) / CYCLE;
     const posBlue = swayPos(tBlue);
     blueWrap.style.transform = `scaleX(-1) translate(${posBlue.x}px, ${posBlue.y}px)`;
+    // For blue, negative x = leaning forward (toward red)
+    updateArms(blueWrap, posBlue.x / SWAY_X);
 
     const tRed = ((elapsed + DESYNC) % CYCLE) / CYCLE;
     const posRed = swayPos(tRed);
     redWrap.style.transform = `scaleX(-1) translate(${posRed.x}px, ${posRed.y}px)`;
+    // For red, positive x = leaning forward (toward blue)
+    updateArms(redWrap, -posRed.x / SWAY_X);
 
     requestAnimationFrame(tick);
   }

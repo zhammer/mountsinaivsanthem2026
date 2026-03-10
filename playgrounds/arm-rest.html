@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Arm Rest Position Playground</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; color: #ccc; font-family: system-ui, sans-serif; display: flex; height: 100vh; }
+
+  .controls {
+    width: 300px;
+    padding: 20px;
+    border-right: 1px solid #333;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .controls h2 { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+  .controls h3 { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 10px; }
+  .control-group { margin-bottom: 14px; }
+  .control-group label { display: block; font-size: 13px; margin-bottom: 6px; color: #aaa; }
+  .control-group .value { color: #ffd700; font-family: monospace; font-size: 13px; }
+  .control-group input[type="range"] { width: 100%; accent-color: #ffd700; }
+
+  .presets { margin-bottom: 24px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .preset-btn {
+    background: #222; border: 1px solid #444; color: #ccc; padding: 6px 12px;
+    font-size: 12px; cursor: pointer; font-family: monospace;
+  }
+  .preset-btn:hover { border-color: #ffd700; color: #ffd700; }
+
+  .right-side { flex: 1; display: flex; flex-direction: column; }
+
+  .preview {
+    flex: 1;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .robot-scene {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .robot-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .robot-wrap.red { margin-right: -80px; z-index: 0; }
+  .robot-wrap.blue { margin-left: -80px; z-index: 0; }
+
+  .robot-parts {
+    position: relative;
+    height: 80vh;
+    aspect-ratio: 1;
+  }
+  .blue .robot-parts { transform: scaleX(-1); }
+
+  .robot-part {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .back-part { transform: translate(10px, -6px); }
+
+  .shoulder-pivot, .elbow-pivot,
+  .back-shoulder-pivot, .back-elbow-pivot {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  .shoulder-pivot {
+    transform-origin: 52.1% 23.2%;
+  }
+  .elbow-pivot {
+    transform-origin: 53.9% 39.4%;
+  }
+  .back-shoulder-pivot {
+    transform-origin: 52.1% 23.2%;
+  }
+  .back-elbow-pivot {
+    transform-origin: 53.9% 39.4%;
+  }
+  .back-shoulder-pivot {
+    transform: translate(10px, -6px);
+  }
+  .back-shoulder-pivot .robot-part {
+    /* no extra translate — inherits from parent */
+  }
+
+  .prompt-area {
+    border-top: 1px solid #333;
+    padding: 16px 20px;
+    background: #1a1a1a;
+    position: relative;
+  }
+  .prompt-area pre {
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #ccc;
+    white-space: pre-wrap;
+    margin: 0;
+    padding-right: 80px;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 12px; right: 16px;
+    background: #333; border: 1px solid #555; color: #ccc;
+    padding: 4px 12px; cursor: pointer; font-size: 12px; font-family: monospace;
+  }
+  .copy-btn:hover { border-color: #ffd700; color: #ffd700; }
+
+  .punch-btn {
+    background: #333; border: 1px solid #555; color: #ccc;
+    padding: 8px 16px; cursor: pointer; font-size: 13px; font-family: monospace;
+    width: 100%; margin-top: 8px;
+  }
+  .punch-btn:hover { border-color: #ffd700; color: #ffd700; }
+
+  hr { border-color: #333; margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <h2>Arm Rest Position</h2>
+
+  <div class="presets">
+    <button class="preset-btn" onclick="applyPreset('current')">Current (0°)</button>
+    <button class="preset-btn" onclick="applyPreset('highGuard')">High Guard</button>
+    <button class="preset-btn" onclick="applyPreset('higherGuard')">Higher Guard</button>
+  </div>
+
+  <h3>Front Arm</h3>
+
+  <div class="control-group">
+    <label>Shoulder: <span class="value" id="shoulder-val">27°</span></label>
+    <input type="range" id="shoulder" min="-30" max="90" value="27" step="1" oninput="updateAll()">
+  </div>
+
+  <div class="control-group">
+    <label>Elbow: <span class="value" id="elbow-val">21°</span></label>
+    <input type="range" id="elbow" min="-63" max="45" value="21" step="1" oninput="updateAll()">
+  </div>
+
+  <hr>
+  <h3>Back Arm</h3>
+
+  <div class="control-group">
+    <label>Shoulder: <span class="value" id="back-shoulder-val">27°</span></label>
+    <input type="range" id="back-shoulder" min="-30" max="90" value="27" step="1" oninput="updateAll()">
+  </div>
+
+  <div class="control-group">
+    <label>Elbow: <span class="value" id="back-elbow-val">21°</span></label>
+    <input type="range" id="back-elbow" min="-63" max="45" value="21" step="1" oninput="updateAll()">
+  </div>
+
+  <hr>
+
+  <button class="punch-btn" onclick="demoPunch('red')">Demo Punch (Red)</button>
+  <button class="punch-btn" onclick="demoPunch('blue')" style="margin-top:4px">Demo Punch (Blue)</button>
+</div>
+
+<div class="right-side">
+  <div class="preview">
+    <div class="robot-scene">
+      <!-- Red robot (left, faces right naturally) -->
+      <div class="robot-wrap red" id="red-wrap">
+        <div class="robot-parts" id="red-parts">
+          <!-- Back arm with pivots -->
+          <div class="back-shoulder-pivot" id="red-back-shoulder">
+            <img class="robot-part" src="../public/sprites/robot_forearm_back_red.png">
+            <div class="back-elbow-pivot" id="red-back-elbow">
+              <img class="robot-part" src="../public/sprites/robot_upper_arm_back_red.png">
+            </div>
+          </div>
+          <img class="robot-part back-part" src="../public/sprites/robot_leg_back_red.png">
+          <img class="robot-part" src="../public/sprites/robot_head_red.png">
+          <img class="robot-part" src="../public/sprites/robot_torso_red.png">
+          <img class="robot-part" src="../public/sprites/robot_leg_front_red.png">
+          <!-- Front arm with pivots -->
+          <div class="shoulder-pivot" id="red-shoulder">
+            <div class="elbow-pivot" id="red-elbow">
+              <img class="robot-part" src="../public/sprites/robot_upper_arm_front_red.png">
+            </div>
+            <img class="robot-part" src="../public/sprites/robot_forearm_front_red.png">
+          </div>
+        </div>
+      </div>
+
+      <!-- Blue robot (right, faces left via scaleX(-1)) -->
+      <div class="robot-wrap blue" id="blue-wrap">
+        <div class="robot-parts" id="blue-parts">
+          <!-- Back arm with pivots -->
+          <div class="back-shoulder-pivot" id="blue-back-shoulder">
+            <img class="robot-part" src="../public/sprites/robot_forearm_back_blue.png">
+            <div class="back-elbow-pivot" id="blue-back-elbow">
+              <img class="robot-part" src="../public/sprites/robot_upper_arm_back_blue.png">
+            </div>
+          </div>
+          <img class="robot-part back-part" src="../public/sprites/robot_leg_back_blue.png">
+          <img class="robot-part" src="../public/sprites/robot_head_blue.png">
+          <img class="robot-part" src="../public/sprites/robot_torso_blue.png">
+          <img class="robot-part" src="../public/sprites/robot_leg_front_blue.png">
+          <!-- Front arm with pivots -->
+          <div class="shoulder-pivot" id="blue-shoulder">
+            <div class="elbow-pivot" id="blue-elbow">
+              <img class="robot-part" src="../public/sprites/robot_upper_arm_front_blue.png">
+            </div>
+            <img class="robot-part" src="../public/sprites/robot_forearm_front_blue.png">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prompt-area">
+    <pre id="prompt"></pre>
+    <button class="copy-btn" onclick="copyPrompt()">Copy</button>
+  </div>
+</div>
+
+<script>
+const DEFAULTS = { shoulder: 0, elbow: 0, backShoulder: 0, backElbow: 0 };
+const PRESETS = {
+  current:     { shoulder: 0,  elbow: 0,   backShoulder: 0,  backElbow: 0 },
+  highGuard:   { shoulder: 27, elbow: 21,  backShoulder: 20, backElbow: 15 },
+  higherGuard: { shoulder: 40, elbow: 30,  backShoulder: 30, backElbow: 25 },
+};
+
+const state = { shoulder: 27, elbow: 21, backShoulder: 27, backElbow: 21 };
+
+function applyPreset(name) {
+  const p = PRESETS[name];
+  document.getElementById('shoulder').value = p.shoulder;
+  document.getElementById('elbow').value = p.elbow;
+  document.getElementById('back-shoulder').value = p.backShoulder;
+  document.getElementById('back-elbow').value = p.backElbow;
+  updateAll();
+}
+
+function updateAll() {
+  state.shoulder = +document.getElementById('shoulder').value;
+  state.elbow = +document.getElementById('elbow').value;
+  state.backShoulder = +document.getElementById('back-shoulder').value;
+  state.backElbow = +document.getElementById('back-elbow').value;
+
+  document.getElementById('shoulder-val').textContent = state.shoulder + '°';
+  document.getElementById('elbow-val').textContent = state.elbow + '°';
+  document.getElementById('back-shoulder-val').textContent = state.backShoulder + '°';
+  document.getElementById('back-elbow-val').textContent = state.backElbow + '°';
+
+  renderPreview();
+  updatePrompt();
+}
+
+function renderPreview() {
+  ['red', 'blue'].forEach(color => {
+    document.getElementById(color + '-shoulder').style.transform = `rotate(${state.shoulder}deg)`;
+    document.getElementById(color + '-elbow').style.transform = `rotate(${state.elbow}deg)`;
+    document.getElementById(color + '-back-shoulder').style.transform = `translate(10px, -6px) rotate(${state.backShoulder}deg)`;
+    document.getElementById(color + '-back-elbow').style.transform = `rotate(${state.backElbow}deg)`;
+  });
+}
+
+function updatePrompt() {
+  const parts = [];
+  parts.push(`Front arm: shoulder ${state.shoulder}°, elbow ${state.elbow}°`);
+  parts.push(`Back arm: shoulder ${state.backShoulder}°, elbow ${state.backElbow}°`);
+
+  document.getElementById('prompt').textContent =
+    `Set robot arm resting positions:\n` +
+    parts.join('\n') + '\n\n' +
+    `CSS:\n` +
+    `.shoulder-pivot { transform: rotate(${state.shoulder}deg); }\n` +
+    `.elbow-pivot { transform: rotate(${state.elbow}deg); }\n` +
+    `.back-shoulder-pivot { transform: rotate(${state.backShoulder}deg); }\n` +
+    `.back-elbow-pivot { transform: rotate(${state.backElbow}deg); }`;
+}
+
+function copyPrompt() {
+  const text = document.getElementById('prompt').textContent;
+  navigator.clipboard.writeText(text);
+  const btn = document.querySelector('.copy-btn');
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy', 1500);
+}
+
+let punching = {};
+function demoPunch(color) {
+  if (punching[color]) return;
+  punching[color] = true;
+  const shoulder = document.getElementById(color + '-shoulder');
+  const elbow = document.getElementById(color + '-elbow');
+
+  shoulder.style.transition = 'transform 0.21s ease-out';
+  elbow.style.transition = 'transform 0.21s ease-out';
+  shoulder.style.transform = 'rotate(90deg)';
+  elbow.style.transform = 'rotate(-63deg)';
+
+  setTimeout(() => {
+    shoulder.style.transition = 'transform 0.2s ease-in';
+    elbow.style.transition = 'transform 0.2s ease-in';
+    shoulder.style.transform = `rotate(${state.shoulder}deg)`;
+    elbow.style.transform = `rotate(${state.elbow}deg)`;
+    setTimeout(() => {
+      shoulder.style.transition = '';
+      elbow.style.transition = '';
+      punching[color] = false;
+    }, 200);
+  }, 610);
+}
+
+updateAll();
+</script>
+</body>
+</html>
