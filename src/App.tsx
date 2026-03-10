@@ -46,8 +46,9 @@ function Robot({
       <Sprite part="leg_back" color={color} className="back-part leg-back" />
       {/* Body */}
       <Sprite part="head" color={color} className="head" />
-      <Sprite part="torso" color={color} className="torso" />
+      <Sprite part="torso" color={color} />
       <Sprite part="leg_front" color={color} className="leg-front" />
+      <div className="click-target" />
       {/* Front arm with pivot joints */}
       <div className="shoulder-pivot">
         <div className="elbow-pivot">
@@ -138,7 +139,21 @@ export default function App() {
 
   return (
     <>
-      <div className="arena">
+      <div
+        className="arena"
+        onClick={(e) => {
+          if (!state.matches("ready")) return;
+          if (!(e.target as HTMLElement).classList.contains("click-target"))
+            return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const center = rect.left + rect.width / 2;
+          if (e.clientX < center) {
+            send({ type: "PUNCH_LEFT" });
+          } else {
+            send({ type: "PUNCH_RIGHT" });
+          }
+        }}
+      >
         <div className="day-counter">
           Day{" "}
           {Math.floor(
@@ -168,7 +183,6 @@ export default function App() {
             isPunching && punchSide === "left" ? " punching-wrap" : ""
           }`}
           ref={redRef}
-          onClick={() => state.matches("ready") && send({ type: "PUNCH_LEFT" })}
         >
           <Robot
             color="red"
@@ -191,9 +205,6 @@ export default function App() {
             isPunching && punchSide === "right" ? " punching-wrap" : ""
           }`}
           ref={blueRef}
-          onClick={() =>
-            state.matches("ready") && send({ type: "PUNCH_RIGHT" })
-          }
         >
           <Robot
             color="blue"
