@@ -36,9 +36,13 @@ function Robot({
 }) {
   return (
     <div className={`robot-parts ${punchPhase} ${hitPhase}`}>
-      {/* Back parts (behind everything) */}
-      <Sprite part="upper_arm_back" color={color} className="back-part" />
-      <Sprite part="forearm_back" color={color} className="back-part" />
+      {/* Back arm with pivot joints */}
+      <div className="back-shoulder-pivot">
+        <Sprite part="forearm_back" color={color} />
+        <div className="back-elbow-pivot">
+          <Sprite part="upper_arm_back" color={color} />
+        </div>
+      </div>
       <Sprite part="leg_back" color={color} className="back-part" />
       {/* Body */}
       <Sprite part="head" color={color} className="head" />

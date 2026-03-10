@@ -74,21 +74,30 @@
   .blue .back-part {
     transform: translate(10px, -6px);
   }
-  /* Punch pivot joints */
-  .shoulder-pivot, .elbow-pivot {
+  /* Pivot joints (front + back arms) */
+  .shoulder-pivot, .elbow-pivot,
+  .back-shoulder-pivot, .back-elbow-pivot {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
   }
   .shoulder-pivot {
     transform-origin: 52.1% 23.2%;
-    transform: rotate(0deg);
+    transform: rotate(27deg);
     transition: transform 0.2s ease-in;
   }
   .elbow-pivot {
     transform-origin: 53.9% 39.4%;
-    transform: rotate(0deg);
+    transform: rotate(21deg);
     transition: transform 0.2s ease-in;
+  }
+  .back-shoulder-pivot {
+    transform-origin: 52.1% 23.2%;
+    transform: translate(10px, -6px) rotate(27deg);
+  }
+  .back-elbow-pivot {
+    transform-origin: 53.9% 39.4%;
+    transform: rotate(21deg);
   }
   .punching .shoulder-pivot {
     transform: rotate(90deg);
@@ -107,20 +116,20 @@
     transition: none;
   }
   .retracting .shoulder-pivot {
-    transform: rotate(0deg);
+    transform: rotate(27deg);
     transition: transform 0.2s ease-in;
   }
   .retracting .elbow-pivot {
-    transform: rotate(0deg);
+    transform: rotate(21deg);
     transition: transform 0.2s ease-in;
   }
   /* Crit: slower fist retract to match head */
   .crit-retracting .shoulder-pivot {
-    transform: rotate(0deg);
+    transform: rotate(27deg);
     transition: transform 0.4s ease-in;
   }
   .crit-retracting .elbow-pivot {
-    transform: rotate(0deg);
+    transform: rotate(21deg);
     transition: transform 0.4s ease-in;
   }
   /* Head hit reaction — starts at holding (after fist lands) */
