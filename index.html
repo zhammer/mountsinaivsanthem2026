@@ -57,6 +57,9 @@
   .blue .robot-parts {
     transform: scaleX(-1);
   }
+  .robot-parts {
+    pointer-events: none;
+  }
   .robot-part {
     position: absolute;
     top: 0;
@@ -67,6 +70,9 @@
     user-select: none;
     -webkit-user-drag: none;
     will-change: transform;
+  }
+  .torso {
+    pointer-events: auto;
   }
   .back-part {
     transform: translate(10px, -6px);
