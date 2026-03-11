@@ -106,7 +106,9 @@ export default function App() {
 
       const addOne = () => {
         const idx = nextIndexRef.current % TESTIMONIALS.length;
-        setShownTestimonials((prev) => [TESTIMONIALS[idx].message, ...prev]);
+        setShownTestimonials((prev) =>
+          [TESTIMONIALS[idx].message, ...prev].slice(0, TESTIMONIALS.length)
+        );
         nextIndexRef.current++;
       };
 
