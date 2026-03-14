@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useMachine } from "@xstate/react";
-import { Analytics } from "@vercel/analytics/react";
+
 import { combatMachine } from "./combatMachine";
 import { startSway, setPaused } from "./sway";
 import { TESTIMONIALS } from "./testimonials";
@@ -89,6 +89,7 @@ export default function App() {
       startSway(redRef.current, blueRef.current);
     }
   }, []);
+
 
   useEffect(() => {
     const hitCount = state.context.log.length;
@@ -321,6 +322,12 @@ export default function App() {
               >
                 [<span className="info-action-text">Share your story</span>]
               </a>
+              <a
+                className="info-action"
+                href="/testimonials"
+              >
+                [<span className="info-action-text">View all testimonials</span>]
+              </a>
             </div>
             <p className="info-credit">EMAIL: zach.the.hammer@gmail.com</p>
             <p className="info-credit">
@@ -367,7 +374,6 @@ export default function App() {
           </div>
         </div>
       )}
-      <Analytics />
     </>
   );
 }
