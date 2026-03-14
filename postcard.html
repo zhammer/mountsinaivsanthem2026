@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Postcard Editor</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #222; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+
+  .postcard {
+    /* Moo Medium Postcard at 150dpi (×2 deviceScaleFactor = 300dpi) */
+    /* Bleed: 7.13" × 5.13" */
+    width: 1070px;
+    height: 770px;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Safe area: 22px inset from bleed edge (= 0.145" bleed + 0.08" trim margin) */
+  /* All content (text, logos, QR) must stay inside this zone */
+
+  .robots-layer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('public/postcard-robots.png') center calc(50% + 30px)/cover no-repeat;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  /* Title bar */
+  .title-bar {
+    position: absolute;
+    top: 26px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 32px;
+    z-index: 10;
+  }
+  .fighter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .fighter-logo {
+    height: 40px;
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.25));
+  }
+  .fighter-name {
+    font-family: Impact, 'Arial Black', sans-serif;
+    font-size: 54px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #ffd700;
+    text-shadow: 0 0 12px rgba(255,215,0,0.5), 0 0 30px rgba(255,215,0,0.2);
+  }
+
+  /* Day counter */
+  .day-counter {
+    position: absolute;
+    top: 26px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: Impact, 'Arial Black', sans-serif;
+    font-size: 54px;
+    color: #ff6600;
+    text-align: center;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-shadow: 0 0 16px rgba(255,102,0,0.5), 0 0 40px rgba(255,102,0,0.15), 0 2px 4px rgba(0,0,0,0.9);
+    border: 4px solid #ff6600;
+    padding: 4px 14px;
+    z-index: 10;
+  }
+
+  /* Testimonial */
+  .testimonial {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #000;
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    line-height: 1.5;
+    padding: 10px 16px;
+    max-width: 76%;
+    z-index: 30;
+  }
+  .quote-mark { color: #999; }
+
+  /* QR codes */
+  .qr { position: absolute; z-index: 10; }
+  .qr img { width: 100%; height: 100%; }
+  .qr-center {
+    bottom: 50%;
+    left: 50%;
+    transform: translate(-50%, calc(50% + 50px));
+    width: 120px;
+    height: 120px;
+  }
+  .qr-left {
+    bottom: 28px;
+    left: 32px;
+    width: 180px;
+    height: 180px;
+  }
+  .qr-right {
+    bottom: 28px;
+    right: 32px;
+    width: 180px;
+    height: 180px;
+  }
+
+  /* Print guides (toggle with ?guides in URL) */
+  .guide {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .guide-trim {
+    /* Trim: 10px inset from bleed on each side */
+    border: 1px dashed rgba(255,0,0,0.6);
+    top: 10px; left: 10px; right: 10px; bottom: 10px;
+  }
+  .guide-safe {
+    /* Safe area: 22px inset from bleed on each side */
+    border: 1px dashed rgba(0,255,0,0.6);
+    top: 22px; left: 22px; right: 22px; bottom: 22px;
+  }
+  .guide-label {
+    position: absolute;
+    font-family: monospace;
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+  .guide-trim .guide-label { color: rgba(255,0,0,0.8); top: -1px; left: 4px; }
+  .guide-safe .guide-label { color: rgba(0,255,0,0.8); top: -1px; left: 4px; }
+</style>
+</head>
+<body>
+  <div class="postcard">
+    <div class="robots-layer"></div>
+
+    <div class="title-bar">
+      <div class="fighter">
+        <img class="fighter-logo" src="public/sprites/logo_mount_sinai.png" alt="">
+        <span class="fighter-name">Mt. Sinai</span>
+      </div>
+      <div class="fighter">
+        <img class="fighter-logo" src="public/sprites/logo_anthem.png" alt="">
+        <span class="fighter-name">Anthem</span>
+      </div>
+    </div>
+
+    <div class="qr qr-center"><img src="public/qr-orange.png" alt="QR"></div>
+
+    <div style="position:absolute; bottom:-180px; left:50%; transform:translateX(-50%); z-index:30; display:flex; flex-direction:column; gap:6px; max-width:76%;">
+      <div class="testimonial" style="position:static; transform:none; max-width:none;">
+        <span class="quote-mark">&ldquo;</span>im sad I may lose my doctor who saved my life<span class="quote-mark">&rdquo;</span>
+      </div>
+      <div class="testimonial" style="position:static; transform:none; max-width:none;">
+        <span class="quote-mark">&ldquo;</span>I have a very complex illness that requires specialized care and Mount Sinai is the only hospital in the country that offers a treatment I need<span class="quote-mark">&rdquo;</span>
+      </div>
+    </div>
+    <!-- Print guides (add ?guides to URL to show) -->
+    <div class="guide guide-trim" style="display:none"><span class="guide-label">TRIM</span></div>
+    <div class="guide guide-safe" style="display:none"><span class="guide-label">SAFE</span></div>
+  </div>
+  <script>
+    if (location.search.includes('guides')) {
+      document.querySelectorAll('.guide').forEach(g => g.style.display = 'block');
+    }
+  </script>
+</body>
+</html>

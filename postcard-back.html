@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Postcard Back</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #222; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+
+  .postcard {
+    /* Moo Medium Postcard at 150dpi (×2 deviceScaleFactor = 300dpi) */
+    /* Bleed: 7.13" × 5.13" */
+    width: 1070px;
+    height: 770px;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    padding-top: 0;
+  }
+
+  .testimonial-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    /* Start partially off-screen to look like a continuation */
+    margin-top: -70px;
+  }
+
+  .testimonial {
+    background: #fff;
+    color: #000;
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    line-height: 1.5;
+    padding: 10px 16px;
+    width: 60%;
+  }
+  .quote-mark { color: #999; }
+
+  /* Sideways URL text */
+  .side-url {
+    position: absolute;
+    top: 50%;
+    font-family: Impact, 'Arial Black', sans-serif;
+    font-size: 32px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    z-index: 10;
+  }
+  .side-url-left {
+    left: -160px;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: center center;
+  }
+  .side-url-right {
+    right: -160px;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: center center;
+  }
+
+  /* QR codes */
+  .qr {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 90px;
+    height: 90px;
+    z-index: 10;
+  }
+  .qr img { width: 100%; height: 100%; }
+  .qr-left { left: 32px; }
+  .qr-right { right: 32px; }
+
+  /* Print guides */
+  .guide {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .guide-trim {
+    border: 1px dashed rgba(255,0,0,0.6);
+    top: 10px; left: 10px; right: 10px; bottom: 10px;
+  }
+  .guide-safe {
+    border: 1px dashed rgba(0,255,0,0.6);
+    top: 22px; left: 22px; right: 22px; bottom: 22px;
+  }
+  .guide-label {
+    position: absolute;
+    font-family: monospace;
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+  .guide-trim .guide-label { color: rgba(255,0,0,0.8); top: -1px; left: 4px; }
+  .guide-safe .guide-label { color: rgba(0,255,0,0.8); top: -1px; left: 4px; }
+</style>
+</head>
+<body>
+  <div class="postcard">
+    <div class="testimonial-list">
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>im sad I may lose my doctor who saved my life<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>I have a very complex illness that requires specialized care and Mount Sinai is the only hospital in the country that offers a treatment I need<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>I lost the doctors who saved my kidneys! I can't even go back to get for my checks up to keep up with my health. This is disgraceful.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>Lost my PCP/Pulmonologist abruptly after 15 years. Paying over $25k on the marketplace and struggle to find doctors who accept the Anthem plan. It's evil.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>Ridiculous!!!!! Absolutely heartbreaking! They raised our rates and took away beloved access to doctors and hospitals who literally saved my life on multiple occasions.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>I use Anthem BCBS through my company. I am now left, mid treatment, to find alllll new doctors and surgeons. I'm livid.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>THIS IS THE INSURANCE THAT MOUNT SINAI NURSES CARRY!!! We can't even see our own doctors<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>Whelp there goes the specialist appointment I waited 2 months for<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>I had a stem cell transplant and still under care I'm crazy about this<span class="quote-mark">&rdquo;</span></div>
+
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>Besides myself over this. 20 years with this network. Incredibly upsetting.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>this has given me an incredible level of anxiety...especially because it took forever to get good doctors especially in regards to transplant<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>Whelp there goes the specialist appointment I waited 2 months for Jesus Christ the medical system is unusable here<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>same for me. had to cancel my appt that i made months ago and will have a lapse in medication while i search for a new doctor. these losers.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>Health care is a fucking nightmare. I finally had a PCP I liked and boom &mdash; not for me anymore!<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>I gave up and found literally all new providers at a different system.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>Insanity !! I've tried everything calls, letters, local govt officials NOTHING !!<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>It was announced today that Mount Sinai is out of Anthem's network. A coworker in HR called me to let me know. I just cried. Answered an email...cried some more.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>Same I really liked my PCP and didn't want to wait 3 or 4 months for a new patient appointment. But honestly I have no choice at this point<span class="quote-mark">&rdquo;</span></div>
+
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>Why is this happening? I see an amazing neurologist at Mt Sinai.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>I'm about to do the same. Sucks that I have to stop going to doctors I've been seeing for decades.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>where is the public pressure to force these guys to sign this contract?!? Where are the politicians that are supposed to be standing up for us?<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>I feel like I'm screaming into the void.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>This year I get to choose between Anthem which is out of network with Mount Sinai and UnitedHealthcare which uses ai to deny claims with wild abandon. Medicaid for All...please!<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>Need this figured out, im one of soo many. I will be paying out of pocket to my dr if not, another dr is not an option.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>lost our wonderful DOCTORS due to this<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>yup I feel the same, it's just scary<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>Has anyone had any luck getting continuity of care approved? It's been a nightmare getting any information from Anthem and I've called several times…<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>I understand what she's going thru. My husband is doing so well with the care he is receiving from his doctors at Mount Sinai. And Mount Sinai is my nearest hospital but in case of an emergency now I have to go to a further hospital.<span class="quote-mark">&rdquo;</span></div>
+    <div class="testimonial"><span class="quote-mark">&ldquo;</span>The best part for me is, my employer is switching from Cigna to Anthem for 2026. I was assured 95% overlap of in-network coverage. Almost all of my doctors are in Mount Sinai... so instead I am losing 95% of my providers!!!!!<span class="quote-mark">&rdquo;</span></div>
+    </div>
+
+    <div class="side-url side-url-left" style="color: rgb(20, 75, 229);">mountsinaivsanthem2026.com</div>
+    <div class="side-url side-url-right" style="color: rgb(195, 15, 17);">mountsinaivsanthem2026.com</div>
+
+    <!-- Print guides (add ?guides to URL to show) -->
+    <div class="guide guide-trim" style="display:none"><span class="guide-label">TRIM</span></div>
+    <div class="guide guide-safe" style="display:none"><span class="guide-label">SAFE</span></div>
+  </div>
+  <script>
+    if (location.search.includes('guides')) {
+      document.querySelectorAll('.guide').forEach(g => g.style.display = 'block');
+    }
+  </script>
+</body>
+</html>
