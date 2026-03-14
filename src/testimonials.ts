@@ -253,5 +253,17 @@ export const TESTIMONIALS: Testimonial[] = [
     message:
       "I cannot find a PCP in network because of this dispute. I have an Anthem BCBS HMO which requires referrals from a PCP to see a specialist. I have a chronic autoimmune condition that requires frequent specialist visits. I did some research and found that over 95% of PCPs in NYC are affiliated in some way with Mt. Sinai. Every doctor Anthem has suggested for me is out of network. I've been calling doctors for months and not one of them is actually in network, despite Anthem claiming they have a robust network of PCPs. My insurance plan is completely useless because I cannot find a PCP thanks to this dispute.",
     source: "email",
-  }
+  },
+  {
+    message:
+      "What's even more annoying is that this doesn't count as a major qualifying event... so when we locked into health plans in November, then this fell apart, we're now stuck with insurance we can't use for the whole year.\n\nSomething like this should give us the ability to change our insurance policy. It's not our fault they can't sort it out.",
+    source:
+      "https://www.reddit.com/r/nyc/comments/1roose1/mount_sinai_vs_anthem_2026/",
+  },
+  {
+    message:
+      "BCBS refuses to even acknowledge that they have received my husband's continuity of care application from his provider. They've sent it multiple times to the fax # BCBS says to use. He has a severe chronic pain condition and has not received any of his usual treatment since December because of this. Fuck BCBS.",
+    source:
+      "https://www.reddit.com/r/nyc/comments/1roose1/mount_sinai_vs_anthem_2026/",
+  },
 ];
