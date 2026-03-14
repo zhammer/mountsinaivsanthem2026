@@ -249,4 +249,9 @@ export const TESTIMONIALS: Testimonial[] = [
       "This year I get to choose between Anthem which is out of network with Mount Sinai one of the biggest medical systems in NYC and UnitedHealthcare which uses ai to deny claims with wild abandon. Medicaid for All...please!",
     source: "https://www.facebook.com/share/p/1CT1he9SVX/",
   },
+  {
+    message:
+      "I cannot find a PCP in network because of this dispute. I have an Anthem BCBS HMO which requires referrals from a PCP to see a specialist. I have a chronic autoimmune condition that requires frequent specialist visits. I did some research and found that over 95% of PCPs in NYC are affiliated in some way with Mt. Sinai. Every doctor Anthem has suggested for me is out of network. I've been calling doctors for months and not one of them is actually in network, despite Anthem claiming they have a robust network of PCPs. My insurance plan is completely useless because I cannot find a PCP thanks to this dispute.",
+    source: "email",
+  }
 ];
