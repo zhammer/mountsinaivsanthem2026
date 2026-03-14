@@ -45,6 +45,7 @@
     display: flex;
     align-items: center;
     will-change: transform;
+    transform: scaleX(-1);
   }
   .robot-wrap.red { right: 50%; margin-right: -160px; z-index: 0; }
   .robot-wrap.blue { left: 50%; margin-left: -160px; z-index: 0; }
@@ -113,6 +114,7 @@
     95% { transform: scaleX(-1) translate(-11.7px, -0.42px); }
     100% { transform: scaleX(-1) translate(-12px, 0px); }
   }
+
   @keyframes sway-front-shoulder {
     0% { transform: translateX(-3px) rotate(26deg); }
     5% { transform: translateX(-2.92px) rotate(26.03deg); }

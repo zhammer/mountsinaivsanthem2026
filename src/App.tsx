@@ -322,6 +322,7 @@ export default function App() {
                 [<span className="info-action-text">Share your story</span>]
               </a>
             </div>
+            <p className="info-credit">EMAIL: zach.the.hammer@gmail.com</p>
             <p className="info-credit">
               INSTRUCTIONS: &#x2190; key or tap red robot for red punch.
               &#x2192; key or tap blue robot for blue punch.
