@@ -163,6 +163,7 @@ export default function App() {
             (Date.now() - new Date("2026-01-01").getTime()) / 86400000
           )}
         </div>
+        <h1 className="visually-hidden">Mount Sinai vs Anthem 2026 Insurance Dispute</h1>
         <div className="title-card">
           <div className="fighter left">
             <img
