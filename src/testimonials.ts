@@ -266,4 +266,9 @@ export const TESTIMONIALS: Testimonial[] = [
     source:
       "https://www.reddit.com/r/nyc/comments/1roose1/mount_sinai_vs_anthem_2026/",
   },
+  {
+    message:
+      "My one year old son suffers from severe food allergies. We enrolled at the Jaffe Pediatric Food Allergy clinic at Mount Sinai and were working tirelessly to help my son through food immunotherapy to help him outgrow some of these severe life threatening allergies. All of our plans are now on hold as Anthem and Mount Sinai are out of network. In my sons case, time of of importance because the sooner you can introduce his immune system to some of these proteins the more likely he is to outgrow some of this. This has been devastating for our family!",
+    source: "email"
+  }
 ];
