@@ -272,9 +272,9 @@ export default function App() {
               </a>
               , accusing each other of unfairness in their public
               communications. Meanwhile, hundreds of thousands of New Yorkers
-              were left in the lurch, scrambling to find new surgeons, primary
-              care physicians, and specialists needed for ongoing treatment,
-              unsure if their previous care would return to network.
+              lost access to their surgeons, primary care physicians, and
+              specialists needed for ongoing treatment, unsure if these health
+              providers would return to their network.
             </p>
             <p>
               Across social media posts and comment sections, New Yorkers shared
