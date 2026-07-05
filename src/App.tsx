@@ -90,7 +90,6 @@ export default function App() {
     }
   }, []);
 
-
   useEffect(() => {
     const hitCount = state.context.log.length;
     if (hitCount > lastHitCountRef.current) {
@@ -157,13 +156,10 @@ export default function App() {
           }
         }}
       >
-        <div className="day-counter">
-          Day{" "}
-          {Math.floor(
-            (Date.now() - new Date("2026-01-01").getTime()) / 86400000
-          )}
-        </div>
-        <h1 className="visually-hidden">Mount Sinai vs Anthem 2026 Insurance Dispute</h1>
+        <div className="day-counter">Day 103</div>
+        <h1 className="visually-hidden">
+          Mount Sinai vs Anthem 2026 Insurance Dispute
+        </h1>
         <div className="title-card">
           <div className="fighter left">
             <img
@@ -254,9 +250,9 @@ export default function App() {
               ✕
             </button>
             <p>
-              Mount Sinai and Anthem Blue Cross Blue Shield have been in failing
-              contract negotiations with each other since January 1st, 2026. It
-              appears they may not come to an agreement. The two multi-billion
+              For the first 103 days of 2026, Mount Sinai and Anthem Blue Cross
+              Blue Shield were in failing contract negotiations. It was not
+              clear if they would come to an agreement. The two multi-billion
               dollar corporations{" "}
               <a
                 className="link-red"
@@ -264,7 +260,7 @@ export default function App() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                trade
+                traded
               </a>{" "}
               <a
                 className="link-blue"
@@ -274,33 +270,34 @@ export default function App() {
               >
                 jabs
               </a>
-              , accusing each other of unfairness on their public communications
-              pages. Meanwhile, hundreds of thousands of New Yorkers are left in
-              the lurch, scrambling to find new surgeons, primary care
-              physicians, and specialists needed for ongoing treatment.
+              , accusing each other of unfairness in their public
+              communications. Meanwhile, hundreds of thousands of New Yorkers
+              were left in the lurch, scrambling to find new surgeons, primary
+              care physicians, and specialists needed for ongoing treatment,
+              unsure if their previous care would return to network.
             </p>
             <p>
-              Across social media posts and comment sections, New Yorkers share
-              their stories. But there has been little journalistic attention to
-              the situation, and Mayor Mamdani, who{" "}
+              Across social media posts and comment sections, New Yorkers shared
+              their stories. But there was little journalistic attention to the
+              situation, and Mayor Mamdani, who{" "}
               <a
                 href="https://x.com/NYCMayor/status/2010532423994364346"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                recently stated
+                stated
               </a>{" "}
               that "No New Yorker should have to fear losing access to health
               care" (while admirably standing beside the New York State Nurses
-              Association), has done nothing publicly to bring attention to this
+              Association), did nothing publicly to bring attention to this
               issue or to pressure the parties to settle.
             </p>
             <p>
-              This website seeks to bring attention to this ongoing struggle,
+              This website sought to bring attention to that struggle,
               assembling a collective voice from the scattered public
               testimonials, inquiries, and pleas shared across the web. As one
-              person writes: "where is the public pressure to force these guys
-              to sign this contract?!? Where are the politicians that are
+              New Yorker wrote: "where is the public pressure to force these
+              guys to sign this contract?!? Where are the politicians that are
               supposed to be standing up for us? [...]
             </p>
             <p>I feel like I’m screaming into the void."</p>
@@ -323,11 +320,9 @@ export default function App() {
               >
                 [<span className="info-action-text">Share your story</span>]
               </a>
-              <a
-                className="info-action"
-                href="/testimonials"
-              >
-                [<span className="info-action-text">View all testimonials</span>]
+              <a className="info-action" href="/testimonials">
+                [<span className="info-action-text">View all testimonials</span>
+                ]
               </a>
             </div>
             <p className="info-credit">EMAIL: zach.the.hammer@gmail.com</p>
